@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" {% block html_attribs %}{% endblock html_attribs %}>
+{%- block html %}
+    <head>
+    {%- block head %}
+    <title>{% block title %}GOOD{% endblock title %}</title>
+
+    {%- block metas %}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta charset="UTF-8">
+        <meta name="Description" content="Graduation Overview and Output for Dancing system">
+    {%- endblock metas %}
+
+    {%- block styles %}
+        <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
+        <link rel="stylesheet" href="{{url_for('static', filename='css/main.css')}}">
+        <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    {%- endblock styles %}
+
+    {%- endblock head %}
+    </head>
+    <body {% block body_attribs %}{% endblock body_attribs %}>
+    {% block body -%}
+
+    {% block navbar %}
+    {%- endblock navbar %}
+
+    {% block content -%}
+    {%- endblock content %}
+
+    {% block scripts %}
+    <script type="text/javascript" src="{{url_for('static', filename='js/jquery-3.4.0.min.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='js/bootstrap.bundle.min.js')}}"></script>
+    {%- endblock scripts %}
+
+    {%- endblock body %}
+    </body>
+{%- endblock html %}
+</html>

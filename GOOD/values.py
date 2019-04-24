@@ -1,0 +1,27 @@
+# Environments
+DEVELOPMENT_ENV = 'development'
+DEBUG_ENV = 'debug'
+TESTING_ENV = 'testing'
+PRODUCTION_ENV = 'production'
+TESTING_ENVIRONMENTS = [DEVELOPMENT_ENV, TESTING_ENV, DEBUG_ENV]
+
+# METHODS
+GET = "GET"
+POST = "POST"
+PUT = "PUT"
+PATCH = "PATCH"
+
+# ACCESS
+ADMIN = 'admin'
+PLATFORM_MANAGER = 'platform_manager'
+ORGANIZATION_BACK_OFFICE = 'organization_back_office'
+ORGANIZATION_FRONT_OFFICE = 'organization_front_office'
+PROMOTION_MANAGER = 'promotion_manager'
+
+ACCESS = {
+    ADMIN: 0,
+    PLATFORM_MANAGER: 10,
+    ORGANIZATION_BACK_OFFICE: 20,
+    ORGANIZATION_FRONT_OFFICE: 21,
+    PROMOTION_MANAGER: 30,
+}
