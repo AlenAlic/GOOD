@@ -1,0 +1,24 @@
+{
+  "name": "good",
+  "version": "1.0.0",
+  "description": "System for grading Ballroom dancing graduations",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "sass": "node-sass -w scss/ -o GOOD/static/css/ --recursive"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlenAlic/GOOD.git"
+  },
+  "author": "Alen Alic",
+  "license": "",
+  "bugs": {
+    "url": "https://github.com/AlenAlic/GOOD/issues"
+  },
+  "homepage": "https://github.com/AlenAlic/GOOD#readme",
+  "dependencies": {
+    "bootstrap": "^4.3.1",
+    "node-sass": "^4.11.0"
+  }
+}

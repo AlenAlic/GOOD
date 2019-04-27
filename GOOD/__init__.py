@@ -84,6 +84,7 @@ def create_app():
             user.is_active = True
             user.access = values.ACCESS[values.ADMIN]
             db.session.add(user)
+            db.session.commit()
 
     @app.shell_context_processor
     def make_shell_context():

@@ -1,5 +1,29 @@
 <!DOCTYPE html>
 <html lang="en" {% block html_attribs %}{% endblock html_attribs %}>
+
+{% macro flash_messages() %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+        <!--<div class="uk-alert-{% if category=='message' %}primary{% else %}{{ category }}{% endif %}" uk-alert>-->
+            <!--<a class="uk-alert-close" uk-close></a>-->
+            <!--<p>{{ message }}</p>-->
+        <!--</div>-->
+        <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            UIkit.notification({
+                message: '{{message}}'+' blalbab ahaljgha alfjljhaljfha agjlhalgh38nd 39rurwn 329rj rjfkkjfjghg',
+                status: '{% if category=='message' %}primary{% else %}{{ category }}{% endif %}',
+                pos: 'top-center',
+                timeout: 8000
+            });
+        });
+        </script>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+{% endmacro %}
+
 {%- block html %}
     <head>
     {%- block head %}
@@ -12,9 +36,11 @@
     {%- endblock metas %}
 
     {%- block styles %}
-        <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
+        <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.custom.css')}}">
         <link rel="stylesheet" href="{{url_for('static', filename='css/main.css')}}">
         <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+        <link rel="stylesheet" href="{{url_for('static', filename='css/uikit.min.css')}}">
+        <link rel="stylesheet" href="{{url_for('static', filename='css/uikit-mod.css')}}">
     {%- endblock styles %}
 
     {%- endblock head %}
@@ -23,14 +49,46 @@
     {% block body -%}
 
     {% block navbar %}
+    <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-primary no-print navbar-default">
+    <div class="container">
+        <a class="navbar-brand" href="{{ url_for('main.index') }}">GOOD</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="navbar-collapse collapse" id="navbarSupportedContent">
+            {% if current_user.is_anonymous %}
+                {% if login_form %}
+                    <form class="form-inline ml-auto form-width-fix" method="POST" enctype="multipart/form-data">
+                        {{ login_form.hidden_tag() }}
+                        {{ login_form.username(class_='form-control mx-0 mx-md-1 my-1 my-md-0', placeholder='Username') }}
+                        {{ login_form.password(class_='form-control mx-0 mx-md-1 my-1 my-md-0', placeholder='Password') }}
+                        {{ login_form.submit(class_='btn btn-outline-primary form-control mx-0 mx-md-1 my-1 my-md-0') }}
+                    </form>
+                {% endif %}
+            {% else %}
+                <form class="form-inline ml-auto">
+                    <span class="navbar-text mx-0 mx-md-2 my-1 my-md-0">Welcome, {{ current_user }}</span>
+                    <a href="{{ url_for('main.logout') }}" class="form-control btn btn-outline-light mx-0 mx-md-2 my-1 my-md-0">Logout</a>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</nav>
     {%- endblock navbar %}
 
     {% block content -%}
+    <div class="container">
+    {{ flash_messages() }}
+
+    {% block app_content %}{% endblock %}
+    </div>
     {%- endblock content %}
 
     {% block scripts %}
     <script type="text/javascript" src="{{url_for('static', filename='js/jquery-3.4.0.min.js')}}"></script>
     <script type="text/javascript" src="{{url_for('static', filename='js/bootstrap.bundle.min.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='js/uikit.min.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='js/uikit-icons.min.js')}}"></script>
     {%- endblock scripts %}
 
     {%- endblock body %}

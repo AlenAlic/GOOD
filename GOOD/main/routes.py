@@ -32,8 +32,8 @@ def logout():
 @bp.route('/dashboard', methods=['GET'])
 @login_required
 def dashboard():
-    if current_user.is_adjudicator():
-        return redirect(url_for('adjudication_system.adjudicator_dashboard'))
-    if current_user.is_floor_manager():
-        return redirect(url_for('adjudication_system.floor_manager_start_page'))
+    # for i in range(3):
+    #     flash(f"test{i}")
+    # if current_user.is_admin():
+    #     return redirect(url_for('adjudication_system.adjudicator_dashboard'))
     return render_template('dashboard.html')

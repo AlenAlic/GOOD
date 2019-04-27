@@ -1,0 +1,18 @@
+.uk-notification {
+    width: 800px
+}
+.uk-notification-bottom-center,.uk-notification-top-center {
+    left: 50%;
+    margin-left: -400px
+}
+@media (max-width: 820px) {
+    .uk-notification {
+        left:10px;
+        right: 10px;
+        width: auto;
+        margin: 0
+    }
+}
+.uk-notification-close {
+    display: block;
+}
