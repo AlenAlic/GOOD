@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block head_scripts %}
+{{super()}}
+<script>
+    const printItem = elem => {
+        let target = document.querySelectorAll('.'+elem.dataset.printId);
+        if (elem.checked) {
+            target.forEach(t => t.classList.remove('no-print'));
+        } else {
+            target.forEach(t => t.classList.add('no-print'));
+        }
+    };
+</script>
+{% endblock %}
+
+{% block app_content %}
+<div class="main-panel">
+    <div class="mx-3 my-3" style="width:100%;">
+        <div class="no-print">
+            <h2>Print lists</h2>
+            <div class="mb-1">There are three different things that can be printed:</div>
+            <div>
+                <input onclick="printItem(this)" type="checkbox" id="heats-list" data-print-id="heats-list">
+                <label for="heats-list">Heat lists for every discipline</label>
+            </div>
+            <div>
+                <input onclick="printItem(this)" type="checkbox" id="numbers-list" data-print-id="numbers-list">
+                <label for="numbers-list">Alphabetical list for the number of the leads</label>
+            </div>
+            <div>
+                <input onclick="printItem(this)" type="checkbox" id="couples-list" data-print-id="couples-list">
+                <label for="couples-list">List of all the couples by number</label>
+            </div>
+            <div class="mb-1">Select what you wish to print and press the "Print" button.</div>
+            <button class="btn btn-primary" onclick="window.print()">Print</button>
+        </div>
+        {% for disc in g.all_disciplines %}
+        <div class="heats-list no-print" style="page-break-after: always;">
+            <h2 class="text-center">{{disc}}</h2>
+            <div class="d-flex" style="justify-content: space-between; width: 100%;">
+                {% for lvl in g.all_levels %}
+                <div class="d-inline-block mx-3" style="vertical-align: top; font-size: 1.125rem;">
+                    <h4>{{lvl}} level</h4>
+                    <div>
+                        {% for heat in print_list[disc][lvl] %}
+                        <div>
+                            <b class="my-0">{{heat.dance}} - Heat {{heat.heat.number}}</b>
+                            <div>
+                                {% for couple in heat.couples() %}
+                                <span class="mr-2">{{couple.number}}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        <div class="numbers-list no-print" style="page-break-after: always;">
+            <h2 class="text-center">Numbers for the leads</h2>
+            <table class="table table-sm" style="font-size: 11px;">
+                <thead>
+                <tr>
+                    <th>Number</th>
+                    <th>Lead</th>
+                    <th>Follow</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for couple in all_couples %}
+                <tr>
+                    <td>{{couple.number}}</td>
+                    <td>{{couple.lead}}</td>
+                    <td>{{couple.follow}}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="couples-list no-print" style="page-break-after: always;">
+            <h2 class="text-center">Couples by number</h2>
+            <table class="table table-sm" style="font-size: 1.25rem;">
+                <thead>
+                <tr>
+                    <th>Number</th>
+                    <th>Lead</th>
+                    <th>Follow</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for couple in g.all_couples %}
+                <tr>
+                    <td>{{couple.number}}</td>
+                    <td>{{couple.lead}}</td>
+                    <td>{{couple.follow}}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

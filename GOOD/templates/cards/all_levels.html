@@ -1,0 +1,26 @@
+<div class="card all-levels">
+    <div class="card-header ">
+        <h4 class="card-title">Available levels</h4>
+        <p class="card-category">The levels that are currently in the system</p>
+    </div>
+    <div class="card-body ">
+        <form class="form" method="POST" enctype="multipart/form-data" novalidate>
+        {% if all_levels|length > 0 %}
+        <ul class="list-group">
+            {% for l in all_levels %}
+            <li class="list-group-item list-group-item-small">
+                {{l}}
+                {% if close is defined %}
+                <button type="submit" class="close" value="{{l.level_id}}" name="delete_level">
+                    <span>&times;</span>
+                </button>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        There are no levels in the system yet.
+        {% endif %}
+        </form>
+    </div>
+</div>

@@ -1,0 +1,26 @@
+<div class="card all-couples">
+    <div class="card-header ">
+        <h4 class="card-title">Available couples <span class="badge badge-pill badge-primary">{{all_couples|length}}</span></h4>
+        <p class="card-category">The couples that are currently in the system</p>
+    </div>
+    <div class="card-body ">
+        <form class="form" method="POST" enctype="multipart/form-data" novalidate>
+        {% if all_couples|length > 0 %}
+        <ul class="list-group">
+            {% for couple in all_couples %}
+            <li class="list-group-item">
+                {{couple}}
+                {% if close is defined %}
+                <button type="submit" class="close" value="{{couple.couple_id}}" name="delete_couple">
+                    <span>&times;</span>
+                </button>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        There are no couples in the system yet.
+        {% endif %}
+        </form>
+    </div>
+</div>

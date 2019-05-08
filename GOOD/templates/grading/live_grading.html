@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{%- block head_scripts %}
+{{super()}}
+<script type="text/javascript" src="{{url_for('static', filename='js/bootstrap-slider.js')}}"></script>
+<link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap-slider.css')}}">
+<script type="text/javascript" charset="utf-8">
+    let socket;
+    $(document).ready(function() {
+        socket = io.connect("http://" + document.domain + ":" + location.port);
+        socket.on("updateGrade", data => updateGrade(data));
+        socket.on("notifyAdjudicatorJoined", data => notifyAdjudicatorJoined(data));
+        socket.on("notifyAdjudicatorLeft", data => notifyAdjudicatorLeft(data));
+    });
+    const updateGrade = data => {
+        console.log(data);
+        let grades = document.getElementById('grade-' + data.gradeId);
+        if (data.grade == 5) {data.grade = "X"}
+        let lead = grades.querySelector('.grade-lead');
+        let follow = grades.querySelector('.grade-follow');
+        if (data.role === "lead") {changeNumber(lead,data)}
+        else {changeNumber(follow,data)}
+        let check =  grades.querySelector('.grade-check');
+        if (lead.innerText !== "X" && follow.innerText !== "X") {
+            check.classList.remove("d-none");
+        } else {
+            check.classList.add("d-none");
+        }
+        if (data.gradingHeatId == "{{grading_heat.grading_heat_id}}") {
+            document.getElementById('graded-' + data.adjudicatorId).innerText = data.graded;
+        }
+    };
+    const flashColor = 'table-primary';
+    const changeNumber = (elem, data) => {
+        elem.innerText = data.grade;
+        elem.classList.add(flashColor);
+        setTimeout(() => {elem.classList.remove(flashColor)}, 700);
+    };
+    const notifyAdjudicatorJoined = data => {
+        UIkit.notification({
+            message: data.message,
+            status: 'primary',
+            pos: 'top-center',
+            timeout: 5000
+        });
+    };
+    const notifyAdjudicatorLeft = data => {
+        UIkit.notification({
+            message: data.message,
+            status: 'primary',
+            pos: 'top-center',
+            timeout: 5000
+        });
+    };
+</script>
+{%- endblock head_scripts %}
+
+{% block app_content %}
+<div class="main-panel">
+    <div class="base-view">
+        {% if heats|length == 0 %}
+        {% for disc in g.all_disciplines %}
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">{{disc}}</h4>
+            </div>
+            <div class="card-body">
+                {% for lvl in g.all_levels %}
+                <a class="btn btn-primary d-block my-1" href="{{url_for('grading.live_grading', discipline_id=disc.discipline_id, level_id=lvl.level_id)}}">{{lvl}} level</a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="card grid-full-width">
+            <div class="card-header">
+                <h4 class="card-title">{{grading_heat.heat.discipline}} - {{grading_heat.heat.level}} level</h4>
+            </div>
+            <div class="card-body">
+                <nav class="nav nav-tabs mb-3">
+                    {% for heat in heats %}
+                    <a class="nav-item nav-link {% if heat == grading_heat %}active{% endif %}"
+                       href="{{url_for('grading.live_grading', discipline_id=heat.heat.discipline.discipline_id, level_id=heat.heat.level.level_id, order=heat.order)}}">
+                        {{heat.display_name()}}
+                    </a>
+                    {% endfor %}
+                </nav>
+                {% for adj in adjudicators_list %}
+                <div class="list-group-item active"><b>{{adj}} <span id="graded-{{adj.user_id}}">{{zeros[adj]}}</span>/{{grades_required[adj]}}</b></div>
+                <div class="heat-couple-grade-grid">
+                    {% for grade in adjudicators_list[adj] %}
+                    <div>
+                        <table class="table table-sm table-bordered live-grading-table">
+                            <tbody id="grade-{{grade.grading_id}}">
+                                <tr><td colspan="2"><b class="no-wrap">Couple {{grade.couple.number}} <i class="fas fa-check-circle grade-check {% if grade.lead_grade == 0 and grade.lead_diploma or grade.follow_grade == 0 and grade.follow_diploma %}d-none{% endif %}" ></i></b> </td></tr>
+                                <tr>
+                                    <td><i class="fas fa-mars"></i></td>
+                                    <td><i class="fas fa-venus"></i></td>
+                                </tr>
+                                <tr>
+                                    <td class="grade-lead {% if not grade.lead_diploma %}table-secondary{% endif %} flash-transition">
+                                        {% if grade.lead_diploma %}
+                                        {% if grade.lead_grade > 0 %}{{"%2g"|format(g.values.calculate_grade(grade.lead_grade))}}{% else %}X{% endif %}
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                    </td>
+                                    <td class="grade-follow {% if not grade.follow_diploma %}table-secondary{% endif %} flash-transition">
+                                        {% if grade.follow_diploma %}
+                                        {% if grade.follow_grade > 0 %}{{"%2g"|format(g.values.calculate_grade(grade.follow_grade))}}{% else %}X{% endif %}
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block head_scripts %}
+{{super()}}
+<script>
+    const removeCouple = elem => {
+        let data = {coupleId: elem.dataset.coupleId, heatId: elem.dataset.heatId};
+        fetch("/grading/remove_dancer_from_heat", {method: "DELETE", credentials: 'same-origin', body: JSON.stringify(data)})
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (result) {
+                if (result.removed) {
+                    let cardBody = elem.closest('.couples-list-container');
+                    let badge = cardBody.querySelector('.badge');
+                    let couplesList = cardBody.querySelector('.couples-list');
+                    elem.parentNode.parentNode.removeChild(elem.parentNode);
+                    badge.innerText = couplesList.children.length
+                }
+            })
+            .catch(function (error) {
+                alert('Could not update task, no response from server.')
+            });
+    };
+</script>
+{% endblock %}
+
+
+{% block app_content %}
+<div class="main-panel">
+    <div class="base-view">
+        <div class="card">
+            <div class="card-header ">
+                <h4 class="card-title">New heat</h4>
+                <p class="card-category">Add a new heat to or remove the last heat from the {{lvl}} level</p>
+            </div>
+            <div class="card-body ">
+                {% for disc in all_disciplines %}
+                <div class="mb-4">
+                <form class="form" method="POST" enctype="multipart/form-data" novalidate>
+                    <input type="hidden" id="change_heats" name="change_heats">
+                    <input class="btn btn-success d-block full-width mb-1" id="add_heat-{{disc.discipline_id}}" name="add_heat-{{disc.discipline_id}}" type="submit" value="Add heat to {{disc}}">
+                    <input class="btn btn-danger d-block full-width mb-2" id="remove_heat-{{disc.discipline_id}}" name="remove_heat-{{disc.discipline_id}}" type="submit" value="Remove heat from {{disc}}" {% if lvl.disc_heat(disc)|length == 0 %}disabled{% endif %}>
+                </form>
+                {% if lvl.disc_heat(disc)|length > 0 %}
+                <ul class="list-group">
+                    {% for heat in lvl.disc_heat(disc) %}
+                    <li class="list-group-item list-group-item-small">{{heat}}</li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                There are no heats in the {{lvl}} level yet for the {{disc}} discipline.
+                {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header ">
+                <h4 class="card-title">New couple</h4>
+                <p class="card-category">Add a new couple to a heat of the {{lvl}} level</p>
+            </div>
+            <div class="card-body ">
+                <form class="form" method="POST" enctype="multipart/form-data" novalidate>
+                    {{ couple_heat_form.hidden_tag() }}
+                    {{ wtf.form_field(couple_heat_form.couple) }}
+                    {{ wtf.form_field(couple_heat_form.heat) }}
+                    {{ wtf.form_field(couple_heat_form.submit) }}
+                </form>
+            </div>
+        </div>
+        {% for disc in all_disciplines %}
+        {% with lvl=lvl, disc=disc %}
+            {% include "cards/lvl_couples.html" %}
+        {% endwith %}
+        {% endfor %}
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+<div class="card all-dancers">
+    <div class="card-header ">
+        <h4 class="card-title">Available dancers <span class="badge badge-pill badge-primary">{{all_dancers|length}}</span></h4>
+        <p class="card-category">The dancers that are currently in the system (alphabetically)</p>
+    </div>
+    <div class="card-body ">
+        <form class="form" method="POST" enctype="multipart/form-data" novalidate>
+        {% if all_dancers|length > 0 %}
+        <ul class="list-group">
+            {% for dancer in all_dancers %}
+            <li class="list-group-item">
+                {{dancer}}
+                {% if close is defined %}
+                <button type="submit" class="close" value="{{dancer.dancer_id}}" name="delete_dancer">
+                    <span>&times;</span>
+                </button>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        There are no dancers in the system yet.
+        {% endif %}
+        </form>
+    </div>
+</div>

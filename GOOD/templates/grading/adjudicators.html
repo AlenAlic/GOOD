@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+
+{% block app_content %}
+<div class="main-panel">
+    <div class="base-view adjudicators-view">
+        <div class="card new-adjudicator">
+            <div class="card-header ">
+                <h4 class="card-title">New adjudicators</h4>
+                <p class="card-category">Add a new adjudicator to the system</p>
+            </div>
+            <div class="card-body ">
+                <form class="form" method="POST" enctype="multipart/form-data" novalidate>
+                    {{ form.hidden_tag() }}
+                    {{ wtf.form_field(form.username) }}
+                    {{ wtf.form_field(form.adjudicator_submit) }}
+                </form>
+            </div>
+        </div>
+        {% with all_adjudicators=all_adjudicators, close=true %}
+            {% include "cards/all_adjudicators.html" %}
+        {% endwith %}
+    </div>
+</div>
+{% endblock %}

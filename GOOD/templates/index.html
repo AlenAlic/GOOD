@@ -3,6 +3,8 @@
 {% block styles %}
 <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
 <link rel="stylesheet" href="{{url_for('static', filename='css/landing-page.css')}}">
+<link rel="stylesheet" href="{{url_for('static', filename='css/uikit.min.css')}}">
+<link rel="stylesheet" href="{{url_for('static', filename='css/uikit-mod.css')}}">
 {% endblock %}
 
 {% block body_attribs %}class="text-center"{% endblock body_attribs %}
@@ -10,11 +12,17 @@
 {% block navbar %}{% endblock %}
 
 {% block content %}
-<form class="form-sign-in" method="POST" enctype="multipart/form-data">
-    <img class="mb-2" src="{{url_for('static', filename='logo.png')}}" alt="GOOD logo">
-    {{ login_form.hidden_tag() }}
-    {{ login_form.username(class_='form-control my-2', placeholder='Username') }}
-    {{ login_form.password(class_='form-control my-2', placeholder='Password') }}
-    {{ login_form.submit(class_='btn btn-primary form-control my-3') }}
-</form>
+{{flash_messages()}}
+    <form class="form-sign-in" method="POST" enctype="multipart/form-data">
+        <img class="mb-2" src="{{url_for('static', filename='logo.png')}}" alt="GOOD logo">
+        {{ login_form.hidden_tag() }}
+        {{ login_form.username(class_='form-control my-2', placeholder='Username') }}
+        {{ login_form.password(class_='form-control my-2', placeholder='Password') }}
+        {{ login_form.submit(class_='btn btn-primary form-control my-3') }}
+    </form>
 {% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="{{url_for('static', filename='js/uikit.min.js')}}"></script>
+<script type="text/javascript" src="{{url_for('static', filename='js/uikit-icons.min.js')}}"></script>
+{%- endblock scripts %}

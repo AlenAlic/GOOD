@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block app_content %}
+<div class="main-panel">
+    <div class="base-view">
+        {% if dancer_list|length == 0 %}
+        {% for disc in g.all_disciplines %}
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">{{disc}}</h4>
+            </div>
+            <div class="card-body">
+                {% for lvl in g.all_levels %}
+                <a class="btn btn-primary d-block my-1" href="{{url_for('grading.view_grades', discipline_id=disc.discipline_id, level_id=lvl.level_id)}}">{{lvl}} level</a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="card grid-full-width">
+            <div class="card-header">
+                <h4 class="card-title">{{discipline}} - {{level}} level <span class="badge badge-pill badge-primary">{{graded}}/{{dancer_list.keys()|length}}</span></h4>
+                <p class="card-category">The grades of every person in this level. This does <b><u>not</u></b> update live.</p>
+            </div>
+            <div class="card-body final-grades-grid">
+                {# for couple in master_list %}
+                <div>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                            <tr><th colspan="3">{{couple.number}}: {{couple.lead}} - {{couple.follow}}</th></tr>
+                            <tr>
+                                <td>Dance</td>
+                                <td><i class="fas fa-mars"></i></td>
+                                <td><i class="fas fa-venus"></i></td>
+                            </tr>
+                            {% for dance in master_list[couple] %}
+                            <tr>
+                                <td>{{dance}}</td>
+                                <td>{{master_list[couple][dance][g.values.FINAL_GRADE][g.values.LEAD]}}</td>
+                                <td>{{master_list[couple][dance][g.values.FINAL_GRADE][g.values.FOLLOW]}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endfor #}
+                {% for dancer in dancer_list.keys()|sort(attribute='name') %}
+                <div>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                            <tr><th colspan="2" class="text-center">{{dancer}}</th></tr>
+                            {% for dance in dancer_list[dancer] %}
+                            <tr class="{% if dancer_list[dancer][dance] == 0 %}table-warning{% endif %}">
+                                <td>{{dance}}</td>
+                                <td>
+                                    {% if dancer_list[dancer][dance] > 0 %}
+                                    {{"%2g"|format(g.values.calculate_grade(dancer_list[dancer][dance]))}}
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

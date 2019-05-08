@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+
+{% block app_content %}
+<div class="main-panel">
+    <div class="base-view disciplines-dances-view">
+        <div class="card default-disciplines-dances">
+            <div class="card-header ">
+                <h4 class="card-title">Defaults</h4>
+                <p class="card-category">Default disciplines and dances (only available if there are no disciplines or dances in the system yet)</p>
+            </div>
+            <div class="card-body ">
+                Will create the default disciplines and dances.
+                <br/>
+                <b>{{g.values.STANDARD}}</b>: <i>{% for d in g.values.STANDARD_DANCES %}{{d}} ({{g.values.DANCES_TAGS[d]}}){% if not loop.last %}, {% endif %}{% endfor %}</i>
+                <br/>
+                <b>{{g.values.LATIN}}</b>: <i>{% for d in g.values.LATIN_DANCES %}{{d}} ({{g.values.DANCES_TAGS[d]}}){% if not loop.last %}, {% endif %}{% endfor %}</i>
+                <div class="d-block mt-3">
+                    {% if all_disciplines|length == 0 and all_dances|length == 0 %}
+                    <form class="form" method="POST" enctype="multipart/form-data" novalidate>
+                        {{ default_dd_form.hidden_tag() }}
+                        {{ wtf.form_field(default_dd_form.default_dd_submit) }}
+                    </form>
+                    {% else %}
+                        <button class="btn btn-primary" disabled type="button">{{default_dd_form.default_dd_submit.label.text}}</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="card new-dance">
+            <div class="card-header ">
+                <h4 class="card-title">New dance</h4>
+                <p class="card-category">Add a new dance to the system</p>
+            </div>
+            <div class="card-body ">
+                <form class="form" method="POST" enctype="multipart/form-data" novalidate>
+                    {{ dance_form.hidden_tag() }}
+                    <div class="row">
+                        <div class="col-sm-8">
+                        {{ wtf.form_field(dance_form.dance_name) }}
+                        </div>
+                        <div class="col-sm-4">
+                        {{ wtf.form_field(dance_form.dance_tag) }}
+                        </div>
+                    </div>
+                    {{ wtf.form_field(dance_form.discipline) }}
+                    {{ wtf.form_field(dance_form.dance_submit) }}
+                </form>
+            </div>
+        </div>
+        {% with all_dances=all_dances, close=true %}
+            {% include "cards/all_dances.html" %}
+        {% endwith %}
+        <div class="card new-discipline">
+            <div class="card-header ">
+                <h4 class="card-title">New discipline</h4>
+                <p class="card-category">Add a new discipline to the system</p>
+            </div>
+            <div class="card-body ">
+                <form class="form" method="POST" enctype="multipart/form-data" novalidate>
+                    {{ discipline_form.hidden_tag() }}
+                    {{ wtf.form_field(discipline_form.discipline_name) }}
+                    {{ wtf.form_field(discipline_form.discipline_submit) }}
+                </form>
+            </div>
+        </div>
+        {% with all_disciplines=all_disciplines, close=true %}
+            {% include "cards/all_disciplines.html" %}
+        {% endwith %}
+    </div>
+</div>
+{% endblock %}

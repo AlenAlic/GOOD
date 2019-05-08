@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block navbar %}
+{% endblock %}
+
+{%- block head_scripts %}
+{{super()}}
+<script type="text/javascript" src="{{url_for('static', filename='js/bootstrap-slider.js')}}"></script>
+<link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap-slider.css')}}">
+{%- endblock head_scripts %}
+
+{% block content -%}
+{{ flash_messages() }}
+
+{% block app_content %}{% endblock %}
+{%- endblock content %}

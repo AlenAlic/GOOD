@@ -1,0 +1,26 @@
+<div class="card all-disciplines">
+    <div class="card-header ">
+        <h4 class="card-title">Available disciplines</h4>
+        <p class="card-category">The disciplines that are currently in the system</p>
+    </div>
+    <div class="card-body ">
+        <form class="form" method="POST" enctype="multipart/form-data" novalidate>
+        {% if all_disciplines|length > 0 %}
+        <ul class="list-group">
+            {% for disc in all_disciplines %}
+            <li class="list-group-item list-group-item-small">
+                {{disc}}
+                {% if close is defined %}
+                <button type="submit" class="close" value="{{disc.discipline_id}}" name="delete_discipline">
+                    <span>&times;</span>
+                </button>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        There are no disciplines in the system yet.
+        {% endif %}
+        </form>
+    </div>
+</div>

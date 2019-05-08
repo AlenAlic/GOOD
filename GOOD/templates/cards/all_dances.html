@@ -1,0 +1,34 @@
+<div class="card all-dances">
+    <div class="card-header ">
+        <h4 class="card-title">Available dances</h4>
+        <p class="card-category">The dances that are currently in the system</p>
+    </div>
+    <div class="card-body ">
+        <form class="form" method="POST" enctype="multipart/form-data" novalidate>
+        {% if all_dances|length > 0 %}
+        <ul class="list-group">
+            {% for d in all_dances %}
+            <li class="list-group-item list-group-item-small">
+                <i class="fa fa-circle {% if d.discipline.name == g.values.STANDARD %}text-primary{% elif d.discipline.name == g.values.LATIN %}text-danger{% else %}text-warning{% endif %}"></i>
+                 {{d}}
+                {% if close is defined %}
+                <button type="submit" class="close" value="{{d.dance_id}}" name="delete_dance">
+                    <span>&times;</span>
+                </button>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        There are no dances in the system yet.
+        {% endif %}
+        </form>
+    </div>
+    <div class="card-footer ">
+        <div class="legend">
+            <i class="fa fa-circle text-primary"></i> {{g.values.STANDARD}}
+            <i class="fa fa-circle text-danger"></i> {{g.values.LATIN}}
+            <i class="fa fa-circle text-warning"></i> Other
+        </div>
+    </div>
+</div>

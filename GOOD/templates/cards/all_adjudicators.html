@@ -1,0 +1,26 @@
+<div class="card all-adjudicators">
+    <div class="card-header ">
+        <h4 class="card-title">Available adjudicators</h4>
+        <p class="card-category">The adjudicators that are currently in the system</p>
+    </div>
+    <div class="card-body ">
+        <form class="form" method="POST" enctype="multipart/form-data" novalidate>
+        {% if all_adjudicators|length > 0 %}
+        <ul class="list-group">
+            {% for adj in all_adjudicators %}
+            <li class="list-group-item">
+                {{adj}}
+                {% if close is defined %}
+                <button type="submit" class="close" value="{{adj.user_id}}" name="delete_adjudicator">
+                    <span>&times;</span>
+                </button>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        There are no adjudicators in the system yet.
+        {% endif %}
+        </form>
+    </div>
+</div>

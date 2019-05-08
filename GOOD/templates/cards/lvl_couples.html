@@ -1,0 +1,27 @@
+<div class="card">
+    <div class="card-header ">
+        <h4 class="card-title">Couples of {{lvl}} level - {{disc}}<span class="badge badge-primary ml-2">{{lvl.couples(disc)|length}}</span></h4>
+        <p class="card-category">All the couples that are dancing the {{lvl}} level, by heat</p>
+    </div>
+    <div class="card-body ">
+        {% if lvl.heats|length > 0 %}
+        {% for heat in lvl.disc_heat(disc) %}
+        <div class="couples-list-container">
+            <h4 class="pl-3 mb-1 mt-0">{{heat}}<span class="badge badge-primary ml-2">{{heat.couples|length}}</span></h4>
+            <ul class="list-group list-group-flush mt-0 mb-4 couples-list">
+                {% for c in heat.couples %}
+                <li class="list-group-item list-group-item-small couple-list-item">
+                    {{c}}
+                    <button type="button" class="close" data-heat-id="{{heat.heat_id}}" data-couple-id="{{c.couple_id}}" onclick="removeCouple(this)">
+                        <span>&times;</span>
+                    </button>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+        {% else %}
+        There are no heats in the {{lvl}} level yet.
+        {% endif %}
+    </div>
+</div>

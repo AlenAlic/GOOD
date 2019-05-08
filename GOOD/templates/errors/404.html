@@ -1,6 +1,8 @@
 {% extends "errors/base_error.html" %}
 
-{% block app_content %}
-<h1>Something unexpected went wrong.</h1>
-<p>Click <a href="{{ url_for('main.index') }}">here</a> to return to the main page.</p>
+{% block content %}
+<div class="container">
+    <h1>Page does not exist.</h1>
+    <p>Click <a href="{{ url_for('main.index') }}">here</a> to return to the main page.</p>
+</div>
 {% endblock %}

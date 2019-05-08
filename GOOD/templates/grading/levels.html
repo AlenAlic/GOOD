@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+
+{% block app_content %}
+<div class="main-panel">
+    <div class="base-view levels-view">
+        <div class="card default-levels">
+            <div class="card-header ">
+                <h4 class="card-title">Defaults</h4>
+                <p class="card-category">Default levels (only available if there are no levels in the system yet)</p>
+            </div>
+            <div class="card-body ">
+                Will create the levels.
+                <br/>
+                <i>{{g.values.D_LEVEL}}</i>
+                <br/>
+                <i>{{g.values.C_LEVEL}}</i>
+                <br/>
+                <i>{{g.values.B_LEVEL}}</i>
+                <br/>
+                <i>{{g.values.A_LEVEL}}</i>
+                <div class="d-block mt-3">
+                    {% if all_levels|length == 0 %}
+                    <form class="form" method="POST" enctype="multipart/form-data" novalidate>
+                        {{ default_level_form.hidden_tag() }}
+                        {{ wtf.form_field(default_level_form.default_level_submit) }}
+                    </form>
+                    {% else %}
+                        <button class="btn btn-primary" disabled type="button">{{default_level_form.default_level_submit.label.text}}</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="card new-level">
+            <div class="card-header ">
+                <h4 class="card-title">New level</h4>
+                <p class="card-category">Add a new level to the system</p>
+            </div>
+            <div class="card-body ">
+                <form class="form" method="POST" enctype="multipart/form-data" novalidate>
+                    {{ level_form.hidden_tag() }}
+                    {{ wtf.form_field(level_form.level_name) }}
+                    {{ wtf.form_field(level_form.level_submit) }}
+                </form>
+            </div>
+        </div>
+        {% with all_levels=all_levels, close=true %}
+            {% include "cards/all_levels.html" %}
+        {% endwith %}
+    </div>
+</div>
+{% endblock %}

@@ -1,11 +1,12 @@
 .uk-notification {
-    width: 800px
+    width: 1000px
 }
 .uk-notification-bottom-center,.uk-notification-top-center {
     left: 50%;
-    margin-left: -400px
+    margin-left: -500px;
+    margin-right: auto;
 }
-@media (max-width: 820px) {
+@media (max-width: 1024px) {
     .uk-notification {
         left:10px;
         right: 10px;
@@ -15,4 +16,12 @@
 }
 .uk-notification-close {
     display: block;
+}
+.uk-notification-message div {
+    width: calc(100% - 2rem);
+}
+
+.uk-notification-message {
+    border: 1px solid black;
+    border-radius: 0.3rem;
 }

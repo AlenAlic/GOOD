@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+
+{% block app_content %}
+<div class="main-panel">
+    <div class="base-view couples-view">
+        <div class="card new-couple">
+            <div class="card-header ">
+                <h4 class="card-title">New couple</h4>
+                <p class="card-category">Add a new couple to a heat of the {{lvl}} level</p>
+            </div>
+            <div class="card-body ">
+                <form class="form" method="POST" enctype="multipart/form-data" novalidate>
+                    {{ new_couple_form.hidden_tag() }}
+                    <div class="row">
+                        <div class="col-xl-2 col-12">
+                            {{ wtf.form_field(new_couple_form.number) }}
+                        </div>
+                        <div class="col-xl-5 col-12">
+                            {{ wtf.form_field(new_couple_form.lead) }}
+                        </div>
+                        <div class="col-xl-5 col-12">
+                            {{ wtf.form_field(new_couple_form.follow) }}
+                        </div>
+                    </div>
+                    {{ wtf.form_field(new_couple_form.submit) }}
+                </form>
+            </div>
+        </div>
+        <div class="card new-multiple-couples">
+            <div class="card-header ">
+                <h4 class="card-title">Multiple new couple</h4>
+                <p class="card-category">Add a bunch of new couples to the system</p>
+            </div>
+            <div class="card-body ">
+                <form class="form" method="POST" enctype="multipart/form-data" novalidate>
+                    {{ multiple_couples_form.hidden_tag() }}
+                    {{ wtf.form_field(multiple_couples_form.multiple_couples_names) }}
+                    {{ wtf.form_field(multiple_couples_form.multiple_couples_submit) }}
+                </form>
+            </div>
+        </div>
+        {% with all_couples=all_couples, close=true %}
+            {% include "cards/all_couples.html" %}
+        {% endwith %}
+    </div>
+</div>
+{% endblock %}

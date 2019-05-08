@@ -1,0 +1,31 @@
+{% set create_heats_available = g.all_adjudicators|length > 0 and g.all_adjudicators|length > 0
+    and g.all_levels|length > 0 and g.all_disciplines|length > 0 and g.all_dances|length > 0 and g.all_dances|length > 0 %}
+
+<div class="bg-light border-right sidebar-wrapper no-print">
+    <div class="list-group">
+        <a href="{{url_for('main.dashboard')}}" class="sidebar-heading list-group-item list-group-item-action {% if request.path.startswith('/dashboard') %}list-group-item-primary{% else %}bg-light{% endif %}">Dashboard</a>
+        <a href="{{url_for('admin.index')}}" class="sidebar-heading list-group-item list-group-item-action bg-light">Database Access <i class="fas fa-exclamation-triangle"></i></a>
+        <div class="sidebar-heading sidebar-box list-group-item {% if g.all_grading_heats|length > 0 %}disabled bg-warning{% else %}bg-light{% endif %}">
+            <div class="sidebar-title">Import data</div>
+            <a href="{{url_for('grading.adjudicators')}}" class="list-group-item list-group-item-action sidebar-list-group-item {% if request.path.startswith('/grading/adjudicators') %}list-group-item-primary{% else %}{% if g.all_grading_heats|length > 0 %}disabled bg-warning{% else %}bg-light{% endif %}{% endif %}">Adjudicators</a>
+            <a href="{{url_for('grading.disciplines_dances')}}" class="list-group-item list-group-item-action sidebar-list-group-item {% if request.path.startswith('/grading/disciplines_dances') %}list-group-item-primary{% else %}{% if g.all_grading_heats|length > 0 %}disabled bg-warning{% else %}bg-light{% endif %}{% endif %}">Disciplines & Dances</a>
+            <a href="{{url_for('grading.levels')}}" class="list-group-item list-group-item-action sidebar-list-group-item {% if request.path.startswith('/grading/levels') %}list-group-item-primary{% else %}{% if g.all_grading_heats|length > 0 %}disabled bg-warning{% else %}bg-light{% endif %}{% endif %}">Levels</a>
+            <a href="{{url_for('grading.dancers')}}" class="list-group-item list-group-item-action sidebar-list-group-item {% if request.path.startswith('/grading/dancers') %}list-group-item-primary{% else %}{% if g.all_grading_heats|length > 0 %}disabled bg-warning{% else %}bg-light{% endif %}{% endif %}">Dancers</a>
+            <a href="{{url_for('grading.couples')}}" class="list-group-item list-group-item-action sidebar-list-group-item {% if request.path.startswith('/grading/couples') %}list-group-item-primary{% else %}{% if g.all_grading_heats|length > 0 %}disabled bg-warning{% else %}bg-light{% endif %}{% endif %}">Couples</a>
+        </div>
+        <div class="sidebar-heading sidebar-box list-group-item {% if g.all_grading_heats|length > 0 %}disabled bg-warning{% else %}bg-light{% endif %}">
+            <div class="sidebar-title">Configure levels</div>
+            {% if g.all_levels|length > 0 %}
+            {% for lvl in g.all_levels %}
+            <a href="{{url_for('grading.setup_levels', level_id=lvl.level_id)}}" class="list-group-item list-group-item-action sidebar-list-group-item {% if request.path.startswith('/grading/setup_levels') and request.args.get('level_id')|int == lvl.level_id %}list-group-item-primary{% else %}{% if g.all_grading_heats|length > 0 %}disabled bg-warning{% else %}bg-light{% endif %}{% endif %}">{{lvl.name}}</a>
+            {% endfor %}
+            {% else %}
+            <div class="list-group-item list-group-item-action sidebar-list-group-item bg-light">&lt;No levels yet&gt;</div>
+            {% endif %}
+        </div>
+        <a href="{{url_for('grading.manage_heats')}}" class="sidebar-heading list-group-item list-group-item-action {% if request.path.startswith('/grading/manage_heats') %}list-group-item-primary{% else %}{% if not create_heats_available %}disabled bg-warning{% else %}bg-light{% endif %}{% endif %}">Manage heats</a>
+        <a href="{{url_for('grading.print_heat_lists')}}" class="sidebar-heading list-group-item list-group-item-action {% if request.path.startswith('/grading/print_heat_lists') %}list-group-item-primary{% else %}{% if g.all_grading_heats|length == 0 %}disabled bg-warning{% else %}bg-light{% endif %}{% endif %}">Print heat lists</a>
+        <a href="{{url_for('grading.live_grading')}}" class="sidebar-heading list-group-item list-group-item-action {% if request.path.startswith('/grading/live_grading') %}list-group-item-primary{% else %}{% if g.all_grading_heats|length == 0 %}disabled bg-warning{% else %}bg-light{% endif %}{% endif %}">Live grading</a>
+        <a href="{{url_for('grading.view_grades')}}" class="sidebar-heading list-group-item list-group-item-action {% if request.path.startswith('/grading/view_grades') %}list-group-item-primary{% else %}{% if g.all_grading_heats|length == 0 %}disabled bg-warning{% else %}bg-light{% endif %}{% endif %}">View grades</a>
+    </div>
+</div>

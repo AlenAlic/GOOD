@@ -1,15 +1,51 @@
 {% extends 'base.html' %}
 
-{# block styles %}
-{{super()}}
-
-{% endblock #}
 
 {% block app_content %}
-<h1>Dashboard</h1>
-<div style="height:120vh;">
-
-
-
+<div class="main-panel">
+    <div class="base-view">
+        {% if config.get('ENV') == g.values.DEBUG_ENV %}
+        {% set cannot_create_defaults = g.all_adjudicators|length > 0 or g.all_disciplines|length > 0 or g.all_dances|length > 0 or
+            g.all_levels|length > 0 or g.all_dancers|length > 0 or g.all_heats|length > 0 %}
+        <div class="grid-full-width">
+            <div class="card">
+                <div class="card-header ">
+                    <h4 class="card-title">Testing</h4>
+                    <p class="card-category">Add testing data to the system. Only available in debug mode.</p>
+                </div>
+                <div class="card-body ">
+                    <form class="form" method="POST" enctype="multipart/form-data" novalidate>
+                        <input class="btn btn-primary mb-1" name="default"
+                               type="submit" value="Create default data" {% if cannot_create_defaults %}disabled{% endif %}>
+                        <input class="btn btn-danger mb-1" name="reset_data"
+                               type="submit" value="Reset data">
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        <div>
+        {% with all_adjudicators=g.all_adjudicators %}
+            {% include "cards/all_adjudicators.html" %}
+        {% endwith %}
+        {% with all_levels=g.all_levels %}
+            {% include "cards/all_levels.html" %}
+        {% endwith %}
+        {% with all_disciplines=g.all_disciplines %}
+            {% include "cards/all_disciplines.html" %}
+        {% endwith %}
+        {% with all_dances=g.all_dances %}
+            {% include "cards/all_dances.html" %}
+        {% endwith %}
+        {% with all_couples=g.all_couples %}
+            {% include "cards/all_couples.html" %}
+        {% endwith %}
+        </div>
+        <div>
+        {% with all_dancers=g.all_dancers %}
+            {% include "cards/all_dancers.html" %}
+        {% endwith %}
+        </div>
+    </div>
 </div>
 {% endblock %}

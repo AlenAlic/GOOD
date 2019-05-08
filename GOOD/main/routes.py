@@ -1,8 +1,10 @@
-from flask import render_template, redirect, url_for, flash, request, current_app
+from flask import render_template, redirect, url_for, flash, request
 from flask_login import current_user, login_user, logout_user, login_required
 from GOOD.main import bp
 from GOOD.main.forms import LoginForm
 from GOOD.models import User
+from GOOD.grading.routes import create_default_adjudicators, create_default_disciplines_dances, create_default_levels, \
+    create_default_dancers, create_default_heats, create_default_couples, assign_default_couples, reset_data
 
 
 @bp.route('/', methods=['GET', 'POST'])
@@ -29,11 +31,22 @@ def logout():
     return redirect(url_for('main.index'))
 
 
-@bp.route('/dashboard', methods=['GET'])
+@bp.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
-    # for i in range(3):
-    #     flash(f"test{i}")
-    # if current_user.is_admin():
-    #     return redirect(url_for('adjudication_system.adjudicator_dashboard'))
+    if current_user.is_adjudicator():
+        return redirect(url_for('grading.adjudicate_start_page'))
+    if request.method == 'POST':
+        if "default" in request.form:
+            create_default_adjudicators()
+            create_default_disciplines_dances()
+            create_default_levels()
+            create_default_dancers()
+            create_default_heats()
+            create_default_couples()
+            assign_default_couples()
+            return redirect(url_for('main.dashboard'))
+        if "reset_data" in request.form:
+            reset_data()
+            return redirect(url_for('main.dashboard'))
     return render_template('dashboard.html')

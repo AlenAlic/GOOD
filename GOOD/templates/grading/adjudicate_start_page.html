@@ -1,0 +1,24 @@
+{% extends 'adjudicate_base.html' %}
+
+{% block app_content %}
+<div class="mx-3 mt-2">
+    <h2>{{current_user}}</h2>
+    <div>Welcome to the GOOD system.</div>
+    <div class="mt-1">Select a level from below to grade.</div>
+    {% for disc in g.all_disciplines %}
+    <ul class="list-group mb-4">
+        <li class="list-group-item list-group-item-primary">{{disc}}</li>
+        <li class="list-group-item list-group-item-small px-0 py-0">
+            {% for lvl in g.all_levels %}
+            <a class="btn btn-primary d-block mx-2 my-2"
+               href="{{url_for('grading.adjudicate_level', discipline_id=disc.discipline_id, level_id=lvl.level_id)}}">
+                {{lvl}} level
+            </a>
+            {% endfor %}
+        </li>
+    </ul>
+    {% endfor %}
+    <div class="mb-2">When you are done, log out here.</div>
+    <a class="btn btn-danger d-block mb-5" href="{{url_for('main.logout')}}">Log out</a>
+</div>
+{% endblock %}
