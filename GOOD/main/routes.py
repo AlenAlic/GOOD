@@ -1,5 +1,6 @@
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import current_user, login_user, logout_user, login_required
+from GOOD import db
 from GOOD.main import bp
 from GOOD.main.forms import LoginForm
 from GOOD.models import User
@@ -27,6 +28,12 @@ def index():
 @bp.route('/logout', methods=['GET'])
 @login_required
 def logout():
+    if current_user.is_adjudicator():
+        current_user.discipline_id = 0
+        current_user.level_id = 0
+        current_user.order = None
+        current_user.start_page = False
+        db.session.commit()
     logout_user()
     return redirect(url_for('main.index'))
 

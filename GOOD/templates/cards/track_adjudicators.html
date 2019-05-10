@@ -1,0 +1,16 @@
+{% if g.all_adjudicators|length > 0 %}
+<div class="card grid-full-width">
+    <div class="card-header">
+        <h4 class="card-title">Track adjudicators</h4>
+        <p class="card-category">See where the adjudicators are.</p>
+    </div>
+    <div class="card-body base-view px-0 py-0">
+        {% for adj in g.all_adjudicators %}
+        <div>
+            <div><b>{{adj}}</b></div>
+            <div id="track-{{adj.user_id}}">{{adj.adjudicator_location()}}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}

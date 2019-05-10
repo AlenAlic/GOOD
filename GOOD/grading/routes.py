@@ -4,7 +4,8 @@ from GOOD.grading import bp
 from GOOD import db
 from GOOD.models import requires_access_level, User, Discipline, Dance, Level, Dancer, Heat, Couple, GradingHeat, Grade
 from GOOD.grading.forms import CreateAdjudicatorForm, DefaultDisciplinesDancesForm, DisciplineForm, DanceForm, \
-    DefaultLevelsForm, LevelForm, DancerForm, MultipleDancersForm, NewCoupleForm, CoupleHeatForm, MultipleCouplesForm
+    DefaultLevelsForm, LevelForm, DancerForm, MultipleDancersForm, NewCoupleForm, CoupleHeatForm, MultipleCouplesForm, \
+    CoupleGradingHeatForm
 from GOOD.values import *
 from sqlalchemy import or_
 from statistics import mean
@@ -248,21 +249,27 @@ def dancers():
         if multiple_dancers_form.multiple_dancers_submit.name in request.form:
             if multiple_dancers_form.validate_on_submit():
                 import_list = multiple_dancers_form.multiple_dancers_names.data.split('\r\n')
-                counter = {'success': 0, 'duplicates': 0}
+                counter = {'success': 0, 'duplicates': 0, 'error': 0}
                 for dancer_name in import_list:
-                    check = Dancer.query.filter(Dancer.name == dancer_name).first()
-                    if check is None:
-                        db.session.add(Dancer(name=dancer_name))
-                        db.session.commit()
-                        counter['success'] += 1
+                    dancer_name = dancer_name.split(",")[0]
+                    if len(dancer_name) >= 3:
+                        check = Dancer.query.filter(Dancer.name == dancer_name).first()
+                        if check is None:
+                            db.session.add(Dancer(name=dancer_name))
+                            db.session.commit()
+                            counter['success'] += 1
+                        else:
+                            counter['duplicates'] += 1
                     else:
-                        counter['duplicates'] += 1
+                        counter['error'] += 1
                 if counter['success'] > 0:
-                    flash("Imported {} new dancers successfully.".format(counter['success']))
+                    flash("Imported {} new dancer(s) successfully.".format(counter['success']))
                 else:
                     flash("No new dancers were imported.")
                 if counter['duplicates'] > 0:
-                    flash("{} duplicate names were ignored.".format(counter['duplicates']), "warning")
+                    flash("{} duplicate name(s) ignored.".format(counter['duplicates']), "warning")
+                if counter['error'] > 0:
+                    flash("{} erroneous line(s) ignored.".format(counter['error']), "warning")
                 return redirect(url_for("grading.dancers"))
         if dancer_form.dancer_submit.name in request.form:
             if dancer_form.validate_on_submit():
@@ -297,41 +304,60 @@ def couples():
         if multiple_couples_form.multiple_couples_submit.name in request.form:
             if multiple_couples_form.validate_on_submit():
                 import_list = multiple_couples_form.multiple_couples_names.data.split('\r\n')
-                counter = {'success': 0, 'duplicates': 0, 'dancers': 0}
+                counter = {'success': 0, 'duplicates': 0, 'dancers': 0, 'error': 0}
                 couple_numbers = [c.number for c in Couple.query.all()]
                 for couple in import_list:
                     couple_data = couple.split(",")
-                    if int(couple_data[0]) not in couple_numbers:
-                        check_lead = Dancer.query.filter(Dancer.name == couple_data[1]).first()
-                        check_follow = Dancer.query.filter(Dancer.name == couple_data[2]).first()
-                        if check_lead is not None and check_follow is not None:
-                            check = Couple.query.filter(Couple.lead == check_lead, Couple.follow == check_follow)\
-                                .first()
-                            if check is None:
-                                db.session.add(Couple(number=couple_data[0], lead=check_lead, follow=check_follow))
-                                db.session.commit()
-                                counter['success'] += 1
+                    for i, item in enumerate(couple_data):
+                        couple_data[i] = item.strip()
+                    if len(couple_data) == 3:
+                        try:
+                            couple_data[0] = int(couple_data[0])
+                            if int(couple_data[0]) not in couple_numbers:
+                                check_lead = Dancer.query.filter(Dancer.name == couple_data[1]).first()
+                                check_follow = Dancer.query.filter(Dancer.name == couple_data[2]).first()
+                                if check_lead is not None and check_follow is not None:
+                                    check = Couple.query.filter(Couple.lead == check_lead,
+                                                                Couple.follow == check_follow) \
+                                        .first()
+                                    if check is None:
+                                        db.session.add(
+                                            Couple(number=couple_data[0], lead=check_lead, follow=check_follow))
+                                        db.session.commit()
+                                        counter['success'] += 1
+                                    else:
+                                        counter['duplicates'] += 1
+                                else:
+                                    counter['dancers'] += 1
                             else:
                                 counter['duplicates'] += 1
-                        else:
-                            counter['dancers'] += 1
+                        except ValueError:
+                            counter['error'] += 1
                     else:
-                        counter['duplicates'] += 1
+                        counter['error'] += 1
                 if counter['success'] > 0:
-                    flash("Imported {} new couples successfully.".format(counter['success']))
+                    flash("Imported {} new couple(s) successfully.".format(counter['success']))
                 else:
                     flash("No new couples were imported.")
                 if counter['duplicates'] > 0:
-                    flash("{} duplicate numbers were ignored.".format(counter['duplicates']), "warning")
+                    flash("{} duplicate number(s) ignored.".format(counter['duplicates']), "warning")
                 if counter['dancers'] > 0:
-                    flash("Could not create {} couples, due to one of the dancers not being in the system."
+                    flash("Could not create {} couple(s), due to one of the dancers not being in the system."
                           .format(counter['dancers']), "warning")
+                if counter['error'] > 0:
+                    flash("{} row(s) ignored due to not being a CSV of the correct format."
+                          .format(counter['error']), "warning")
                 return redirect(url_for("grading.couples"))
         if new_couple_form.submit.name in request.form:
             if new_couple_form.validate_on_submit():
-                if new_couple_form.lead.data == new_couple_form.follow.data:
-                    flash("{} cannot dance with him-/herself."
-                          .format(Dancer.query.filter(Dancer.dancer_id == new_couple_form.lead.data).first()))
+                check_lead = Dancer.query.filter(Dancer.dancer_id == new_couple_form.lead.data).first()
+                check_follow = Dancer.query.filter(Dancer.dancer_id == new_couple_form.follow.data).first()
+                check_couple = Couple.query.filter(Couple.lead == check_lead, Couple.follow == check_follow).first()
+                if check_lead == check_follow:
+                    flash("{} cannot dance with him-/herself.".format(check_lead))
+                elif check_couple is not None:
+                    flash("{lead} and {follow} are already a couple (number {number})."
+                          .format(lead=check_lead, follow=check_follow, number=check_couple.number))
                 else:
                     couple = Couple()
                     couple.number = new_couple_form.number.data
@@ -341,7 +367,7 @@ def couples():
                     db.session.commit()
                     flash("Added {lead} (lead) and {follow} (follow) as a couple to system."
                           .format(lead=couple.lead, follow=couple.follow))
-                    return redirect(url_for('grading.couples'))
+                return redirect(url_for('grading.couples'))
         if "delete_couple" in request.form:
             couple = Couple.query.filter(Couple.couple_id == request.form["delete_couple"]).first()
             if couple is not None:
@@ -378,9 +404,18 @@ def setup_levels():
                 counter = {'success': 0, 'duplicates': 0}
                 for couple in couples_list:
                     if couple in heat.couples:
-                        flash("Couple {couple} is already dancing in the {level} level, {disc} discipline."
-                              .format(couple=couple, level=heat.level, disc=heat.discipline))
+                        flash("Couple {couple} is already dancing in Heat {number}, {disc} {level} level."
+                              .format(couple=couple, number=heat.number, disc=heat.discipline, level=heat.level),
+                              "warning")
                         counter["duplicates"] += 1
+                    elif couple.lead in heat.dancers():
+                        flash("{dancer} is already dancing in Heat {number}, {disc} {level} level."
+                              .format(dancer=couple.lead, number=heat.number, disc=heat.discipline, level=heat.level),
+                              "warning")
+                    elif couple.follow in heat.dancers():
+                        flash("{dancer} is already dancing in Heat {number}, {disc} {level} level."
+                              .format(dancer=couple.follow, number=heat.number, disc=heat.discipline, level=heat.level),
+                              "warning")
                     else:
                         couple.heats.append(heat)
                         db.session.add(couple)
@@ -433,6 +468,7 @@ def remove_dancer_from_heat():
 def manage_heats():
     all_levels = Level.query.order_by(Level.level_id).all()
     all_disciplines = Discipline.query.order_by(Discipline.discipline_id).all()
+    couple_heat_form = CoupleGradingHeatForm()
     if request.method == 'POST':
         if "create_heats" in request.form:
             form = {k: v for k, v in request.form.items()}
@@ -474,10 +510,35 @@ def manage_heats():
                         item.order = count
             db.session.commit()
             return redirect(url_for('grading.manage_heats'))
-    return render_template('grading/manage_heats.html', all_levels=all_levels, all_disciplines=all_disciplines)
+        if "delete_heats" in request.form:
+            GradingHeat.query.delete()
+            db.session.commit()
+            return redirect(url_for('grading.manage_heats'))
+        if couple_heat_form.submit.name in request.form:
+            if couple_heat_form.validate_on_submit():
+                couple = Couple.query.filter(Couple.couple_id == couple_heat_form.couple.data).first()
+                heat = GradingHeat.query.filter(GradingHeat.grading_heat_id == couple_heat_form.heat.data).first()
+                check_grades = Grade.query.filter(Grade.grading_heat == heat, Grade.couple == couple).all()
+                if len(check_grades) == 0:
+                    for adj in g.all_adjudicators:
+                        db.session.add(Grade(couple=couple, grading_heat=heat, adjudicator=adj,
+                                             lead_diploma=couple_heat_form.lead_diploma.data,
+                                             follow_diploma=couple_heat_form.follow_diploma.data))
+                    db.session.commit()
+                    flash('Added {couple} to Heat {number} ({dance}) in the {disc} {lvl} level.'
+                          .format(couple=couple, disc=heat.heat.discipline, lvl=heat.heat.level,
+                                  number=heat.heat.number, dance=heat.dance))
+                else:
+                    flash('Couple {couple} is already dancing in Heat {number} ({dance}) in the {disc} {lvl} level.'
+                          .format(couple=couple, disc=heat.heat.discipline, lvl=heat.heat.level,
+                                  number=heat.heat.number,
+                                  dance=heat.dance))
+                return redirect(url_for('grading.manage_heats'))
+    return render_template('grading/manage_heats.html', all_levels=all_levels, all_disciplines=all_disciplines,
+                           couple_heat_form=couple_heat_form)
 
 
-@bp.route('/change_grading_heat_order', methods=['PUT'])
+@bp.route('/change_grading_heat_order', methods=['PATCH'])
 @login_required
 @requires_access_level([ACCESS[ADMIN]])
 def change_grading_heat_order():
@@ -501,8 +562,35 @@ def remove_grade_from_grading_heat():
         db.session.delete(grade)
     db.session.commit()
     return jsonify({
-        "removed": len(Grade.query.filter(Grade.couple == couple, Grade.grading_heat == grading_heat).all()) == 0
+        "removed": len(Grade.query.filter(Grade.couple == couple, Grade.grading_heat == grading_heat).all()) == 0,
+        "message": "Removed couple {couple} from {dance} Heat {number}, "
+                   "{lvl} level, {disc}.".format(couple=couple, dance=grading_heat.dance,
+                                                 number=grading_heat.heat.number, lvl=grading_heat.heat.level,
+                                                 disc=grading_heat.heat.discipline)
     })
+
+
+@bp.route('/change_diploma', methods=['PATCH'])
+@login_required
+@requires_access_level([ACCESS[ADMIN]])
+def change_diploma():
+    data = json.loads(request.data)
+    grade = Grade.query.filter(Grade.grading_id == data["gradeId"]).first()
+    diploma = not data["diploma"]
+    if data["role"] == "lead":
+        grade.lead_diploma = diploma
+        dancer = grade.couple.lead
+    else:
+        grade.follow_diploma = diploma
+        dancer = grade.couple.follow
+    db.session.commit()
+    if diploma:
+        message = "{dancer} will get graded on the {dance} {lvl} level."\
+            .format(dancer=dancer, dance=grade.grading_heat.dance, lvl=grade.grading_heat.heat.level)
+    else:
+        message = "{dancer} will not get graded on the {dance} {lvl} level."\
+            .format(dancer=dancer, dance=grade.grading_heat.dance, lvl=grade.grading_heat.heat.level)
+    return jsonify({"diploma": diploma,  "message": message})
 
 
 @bp.route('/print_heat_lists', methods=['GET', 'POST'])
@@ -577,22 +665,38 @@ def view_grades():
                             master_list[couple][dance][FINAL_GRADE][d] = round(mean(grades), 2)
                 except KeyError:
                     pass
-        dancer_list = {}
+        dancer_list = {LEAD: {}, FOLLOW: {}}
         for grade in grade_list:
             if grade.lead_diploma:
-                dancer_list[grade.couple.lead] = {}
+                dancer_list[LEAD][grade.couple.lead] = {}
             if grade.follow_diploma:
-                dancer_list[grade.couple.follow] = {}
+                dancer_list[FOLLOW][grade.couple.follow] = {}
             for dance in dances:
                 try:
-                    dancer_list[grade.couple.lead][dance] = master_list[grade.couple][dance][FINAL_GRADE][LEAD]
+                    dancer_list[LEAD][grade.couple.lead][dance] = master_list[grade.couple][dance][FINAL_GRADE][LEAD]
                 except KeyError:
                     pass
                 try:
-                    dancer_list[grade.couple.follow][dance] = master_list[grade.couple][dance][FINAL_GRADE][FOLLOW]
+                    dancer_list[FOLLOW][grade.couple.follow][dance] = \
+                        master_list[grade.couple][dance][FINAL_GRADE][FOLLOW]
                 except KeyError:
                     pass
-        graded = len([d for d in dancer_list.keys() if min(dancer_list[d].values()) > 0])
+        graded = {r: len([d for d in dancer_list[r].keys() if min(dancer_list[r][d].values()) > 0])
+                  for r in [LEAD, FOLLOW]}
+    for role in dancer_list:
+        for dancer in dancer_list[role]:
+            for dance in dancer_list[role][dancer]:
+                dancer_list[role][dancer][dance] = round(calculate_grade(dancer_list[role][dancer][dance]), 2)
+    if len(g.all_adjudicators) == 2:
+        for role in dancer_list:
+            for dancer in dancer_list[role]:
+                for dance in dancer_list[role][dancer]:
+                    dancer_list[role][dancer][dance] = fancy_grade(dancer_list[role][dancer][dance])
+    else:
+        for role in dancer_list:
+            for dancer in dancer_list[role]:
+                for dance in dancer_list[role][dancer]:
+                    dancer_list[role][dancer][dance] = formatted_grade(dancer_list[role][dancer][dance])
     return render_template('grading/view_grades.html', dancer_list=dancer_list, level=lvl, discipline=disc,
                            graded=graded)
 
@@ -601,6 +705,11 @@ def view_grades():
 @login_required
 @requires_access_level([ACCESS[ADJUDICATOR]])
 def adjudicate_start_page():
+    current_user.discipline_id = 0
+    current_user.level_id = 0
+    current_user.order = None
+    current_user.start_page = True
+    db.session.commit()
     return render_template('grading/adjudicate_start_page.html')
 
 
@@ -608,9 +717,16 @@ def adjudicate_start_page():
 @login_required
 @requires_access_level([ACCESS[ADJUDICATOR]])
 def adjudicate_level():
-    disc = Discipline.query.filter(Discipline.discipline_id == request.args.get('discipline_id', 0, int)).first()
-    lvl = Level.query.filter(Level.level_id == request.args.get('level_id', 0, int)).first()
+    discipline_id = request.args.get('discipline_id', 0, int)
+    level_id = request.args.get('level_id', 0, int)
     order = request.args.get('order')
+    current_user.discipline_id = discipline_id
+    current_user.level_id = level_id
+    current_user.order = order
+    current_user.start_page = False
+    db.session.commit()
+    disc = Discipline.query.filter(Discipline.discipline_id == discipline_id).first()
+    lvl = Level.query.filter(Level.level_id == level_id).first()
     grading_heat = GradingHeat.query.join(Heat)\
         .filter(Heat.discipline == disc, Heat.level == lvl, GradingHeat.order == order).first()
     grades = []

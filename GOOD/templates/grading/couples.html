@@ -7,7 +7,7 @@
         <div class="card new-couple">
             <div class="card-header ">
                 <h4 class="card-title">New couple</h4>
-                <p class="card-category">Add a new couple to a heat of the {{lvl}} level</p>
+                <p class="card-category">Add a new couple to the system.</p>
             </div>
             <div class="card-body ">
                 <form class="form" method="POST" enctype="multipart/form-data" novalidate>
@@ -29,11 +29,15 @@
         </div>
         <div class="card new-multiple-couples">
             <div class="card-header ">
-                <h4 class="card-title">Multiple new couple</h4>
-                <p class="card-category">Add a bunch of new couples to the system</p>
+                <h4 class="card-title">Multiple new couple (duplicate numbers/couples will be ignored)</h4>
+                <p class="card-category">Copy the contents of your CSV list in the box below to add those couples</p>
             </div>
             <div class="card-body ">
-                <form class="form" method="POST" enctype="multipart/form-data" novalidate>
+                <div class="mb-3 d-flex">
+                    <img class="mr-2" src="{{url_for('static', filename='csv_example.png')}}" alt="Shows how to create a CSV for cells in Excel.">
+                    <div>If you wish to create a CSV list from your Exces/Gsheet cells, but are not sure how, the image to the left gives a way how to do it.</div>
+                </div>
+                <form class="form d-block" method="POST" enctype="multipart/form-data" novalidate>
                     {{ multiple_couples_form.hidden_tag() }}
                     {{ wtf.form_field(multiple_couples_form.multiple_couples_names) }}
                     {{ wtf.form_field(multiple_couples_form.multiple_couples_submit) }}

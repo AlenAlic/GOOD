@@ -14,7 +14,7 @@
         }
         data['disciplineId'] = targetList.dataset.disciplineId;
         data['levelId'] = targetList.dataset.levelId;
-        fetch("/grading/change_grading_heat_order", {method: "PUT", credentials: 'same-origin', body: JSON.stringify(data)})
+        fetch("/grading/change_grading_heat_order", {method: "PATCH", credentials: 'same-origin', body: JSON.stringify(data)})
             .then(function (response) {
                 return response.json();
             })
@@ -26,9 +26,9 @@
     const viewDancers = elem => {
         let dancers = document.querySelectorAll('.heat-couple-grid');
         if (elem.checked) {
-            dancers.forEach(d => {d.style.display = ''});
+            dancers.forEach(d => {d.classList.remove('d-none')});
         } else {
-            dancers.forEach(d => {d.style.display = 'none'});
+            dancers.forEach(d => {d.classList.add('d-none')});
         }
     };
     const toggleLevels = show => {
@@ -48,12 +48,43 @@
                 if (result.removed) {
                     let box = elem.closest('.heat-couple-box');
                     box.parentNode.removeChild(box);
+                    UIkit.notification({
+                        message: result.message,
+                        status: 'primary',
+                        pos: 'top-center',
+                        timeout: 5000
+                    });
                 }
             })
             .catch(function (error) {
                 alert('Could not update task, no response from server.')
             });
     };
+    const changeDiploma = elem => {
+        let data = {gradeId: elem.dataset.gradeId, role: elem.dataset.role, diploma: Boolean(Number(elem.dataset.diploma))};
+        fetch("/grading/change_diploma", {method: "PATCH", credentials: 'same-origin', body: JSON.stringify(data)})
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (result) {
+                if (result.diploma) {
+                    elem.classList.remove('no-diploma');
+                    elem.dataset.diploma = "1";
+                } else {
+                    elem.classList.add('no-diploma');
+                    elem.dataset.diploma = "0";
+                }
+                UIkit.notification({
+                    message: result.message,
+                    status: 'primary',
+                    pos: 'top-center',
+                    timeout: 5000
+                });
+            })
+            .catch(function (error) {
+                alert('Could not update task, no response from server.')
+            });
+    }
 </script>
 {% endblock %}
 
@@ -65,19 +96,23 @@
         <div class="grid-full-width">
             <div class="card">
                 <div class="card-header ">
-                    <h4 class="card-title">Create all heats for all levels to grade</h4>
-                    <p class="card-category">Please check all the levels below to see if everything is correct, then create all heats.</p>
+                    <h4 class="card-title">Create heats for all levels to grade</h4>
+                    <p class="card-category">Please check below if everything is correct, then create all heats.</p>
                 </div>
                 <div class="card-body">
                     <div>
-                        It can happen that what optional dance couple wish to dance does not match up with the heats you wish to create. There are two ways around this:
-                        <ol class="mt-1">
-                            <li>Add all optional dances to all heats, and then remove specific couples after the heats have been created</li>
-                            <li>Create separate heat(s) for that one dance</li>
-                        </ol>
+                        From the data below, heats with the checked dances, the shown couples and who wants a diploma or not can be created.
+                    </div>
+                    <div>
+                        This will create all heats at once, and heats cannot be added or removed, so make sure that the heat data is correct.
+                    </div>
+                    <div>
+                        Couples can be change, so if there are couples that do no wish to dance all dances in that heat, you can remove them after the heats have been created.
                     </div>
                     <form class="form" method="POST" enctype="multipart/form-data" novalidate>
-                        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#createModal">Create heats</button>
+                        <div>
+                            <button type="button" class="btn btn-success my-2" data-toggle="modal" data-target="#createModal">Create heats</button>
+                        </div>
                         <div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-labelledby="createModalLabel" aria-hidden="true">
                             <div class="modal-dialog modal-lg" role="document">
                                 <div class="modal-content">
@@ -89,7 +124,6 @@
                                     </div>
                                     <div class="modal-body">
                                         <p>Do you wish to create the heats for the grading system?</p>
-                                        <p>Doing so will delete any existing heats and grades.</p>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-dismiss="modal">No, do <b>NOT</b> create heats</button>
@@ -116,8 +150,8 @@
                                     {% for dance in disc.dances %}
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" name="heat-{{heat.heat_id}}-dance-{{dance.dance_id}}"
-                                               id="dance-{{dance.dance_id}}" {% if dance.name in g.values.BASIC_DANCES or dance.name in g.values.MANDATORY_DANCES[lvl.name] %}checked{% endif %}>
-                                        <label class="form-check-label" for="dance-{{dance.dance_id}}">{{dance}}</label>
+                                               id="heat-{{heat.heat_id}}-dance-{{dance.dance_id}}" {% if dance.name in g.values.BASIC_DANCES or dance.name in g.values.MANDATORY_DANCES[lvl.name] %}checked{% endif %}>
+                                        <label class="form-check-label" for="heat-{{heat.heat_id}}-dance-{{dance.dance_id}}">{{dance}}</label>
                                     </div>
                                     {% endfor %}
                                 </td>
@@ -151,24 +185,64 @@
             </div>
         </div>
         {% else %}
-        <div class="grid-full-width">
-            <div class="card mb-2">
-                <div class="card-header">
-                    <h4 class="card-title">Sort levels</h4>
-                    <p class="card-category">Sort the heats in the order they will be danced in in the lists below. You can sort the order of the heats by dragging them, and placing them in order.</p>
+        <div class="card mb-2">
+            <div class="card-header">
+                <h4 class="card-title">Sort levels</h4>
+                <p class="card-category">Sort the heats in the order they will be danced in in the lists below. You can sort the order of the heats by dragging them, and placing them in order.</p>
+            </div>
+            <div class="card-body">
+                <div class="my-2">
+                    <div>To make changing the order of the heats easier, the dancer that are in the heat are hidden by default.</div>
+                    <input onclick="viewDancers(this)" id="detailed-view" type="checkbox">
+                    <label class="mr-3 ml-1 my-1" for="detailed-view">Check this to show the dancers per heat</label>
                 </div>
-                <div class="card-body">
-                    <div class="my-2">
-                        <div>To make changing the order of the heats easier, the dancer that are in the heat are hidden by default.</div>
-                        <input onclick="viewDancers(this)" id="detailed-view" type="checkbox">
-                        <label class="mr-3 ml-1" for="detailed-view">Check this to show the dancers per heat</label>
-                    </div>
-                    <div class="my-2">
-                        <div class="mb-1">You can hide the heats by clicking on the level. The buttons below control all the levels at once.</div>
-                        <button onclick="toggleLevels(true)" class="btn btn-outline-primary btn-sm">Show all levels</button>
-                        <button onclick="toggleLevels(false)" class="btn btn-outline-primary btn-sm">Collapse all levels</button>
-                    </div>
+                <div class="mt-2 mb-3">
+                    <div class="mb-1">You can hide the heats by clicking on the level. The buttons below control all the levels at once.</div>
+                    <button onclick="toggleLevels(true)" class="btn btn-outline-primary btn-sm">Show all levels</button>
+                    <button onclick="toggleLevels(false)" class="btn btn-outline-primary btn-sm">Collapse all levels</button>
                 </div>
+                <form class="form my-2" method="POST" enctype="multipart/form-data" novalidate>
+                    <div class="my-1">If large scale changes are required, it can be easier/faster to just delete all heats and start over.</div>
+                    <div class="my-1">This will not remove the settings under "Import data" and "Configure levels".</div>
+                    <button type="button" class="btn btn-danger my-1" data-toggle="modal" data-target="#deleteModal">Delete all heats</button>
+                    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Delete all heats</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Are you sure that you wish to delete all the heats?</p>
+                                    <p>This will delete any grades given so far and is irreversible!</p>
+                                    <p>The data will be lost!</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">No, do <b>NOT</b> delete heats</button>
+                                    <input class="btn btn-danger" id="delete_heats" name="delete_heats" type="submit" value="Yes, delete heats">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="card mb-2">
+            <div class="card-header">
+                <h4 class="card-title">Add couple</h4>
+                <p class="card-category">Add a couple to a heat</p>
+            </div>
+            <div class="card-body">
+                <form class="form" method="POST" enctype="multipart/form-data" novalidate>
+                    {{ couple_heat_form.hidden_tag() }}
+                    {{ wtf.form_field(couple_heat_form.couple) }}
+                    {{ wtf.form_field(couple_heat_form.heat) }}
+                    {{ wtf.form_field(couple_heat_form.lead_diploma) }}
+                    {{ wtf.form_field(couple_heat_form.follow_diploma) }}
+                    {{ wtf.form_field(couple_heat_form.submit) }}
+                </form>
             </div>
         </div>
         {% for disc in all_disciplines %}
@@ -188,8 +262,8 @@
                                 {% for grading_heat in lvl.disc_grading_heat(disc)|sort(attribute='order') %}
                                 <li class="list-group-item" data-grading-heat-id="{{grading_heat.grading_heat_id}}">
                                     <div class="text-center text-uppercase"><b>{{grading_heat.display_name(short=false)}}</b></div>
-                                    <div class="heat-couple-grid mt-2" style="display: none;">
-                                        {% for grade in grading_heat.adjudicator_grades() %}
+                                    <div class="heat-couple-grid mt-2 d-none">
+                                        {% for grade in grading_heat.adjudicator_grades()|sort(attribute='couple.number') %}
                                         <div class="heat-couple-box px-2 py-1">
                                             <div>
                                                 <i class="no-wrap">Couple {{grade.couple.number}}</i>
@@ -197,7 +271,7 @@
                                                     <span>&times;</span>
                                                 </button>
                                                 <div class="modal fade" id="delete-grade-{{grade.grading_id}}" tabindex="-1" role="dialog" aria-hidden="true">
-                                                    <div class="modal-dialog" role="document">
+                                                    <div class="modal-dialog modal-lg" role="document">
                                                         <div class="modal-content">
                                                             <div class="modal-header">
                                                                 <h5 class="modal-title">Delete couple</h5>
@@ -207,7 +281,6 @@
                                                             </div>
                                                             <div class="modal-body">
                                                                 <p>Are you sure you wish to remove couple number {{grade.couple.number}} {{grade.couple.lead}} and {{grade.couple.follow}} from the {{grade.grading_heat.dance}} Heat {{grade.grading_heat.heat.number}}?</p>
-                                                                <p>This removal is IRREVERSIBLE!</p>
                                                             </div>
                                                             <div class="modal-footer">
                                                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">No, leave the couple</button>
@@ -220,8 +293,16 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="no-wrap">{{grade.couple.lead}}{% if grade.lead_diploma %} <i class="fas fa-graduation-cap float-right"></i>{% endif %}</div>
-                                            <div class="no-wrap">{{grade.couple.follow}}{% if grade.follow_diploma %} <i class="fas fa-graduation-cap float-right"></i>{% endif %}</div>
+                                            <div class="no-wrap mt-1">
+                                                {{grade.couple.lead}}
+                                                <i onclick="changeDiploma(this)" data-grade-id="{{grade.grading_id}}" data-role="lead" data-diploma="{% if grade.lead_diploma %}1{% else %}0{% endif %}"
+                                                   class="fas fa-scroll float-right {% if not grade.lead_diploma %}no-diploma{% endif %} diploma"></i>
+                                            </div>
+                                            <div class="no-wrap">
+                                                {{grade.couple.follow}}
+                                                <i onclick="changeDiploma(this)" data-grade-id="{{grade.grading_id}}" data-role="follow" data-diploma="{% if grade.follow_diploma %}1{% else %}0{% endif %}"
+                                                   class="fas fa-scroll float-right {% if not grade.follow_diploma %}no-diploma{% endif %} diploma"></i>
+                                            </div>
                                         </div>
                                         {% endfor %}
                                     </div>

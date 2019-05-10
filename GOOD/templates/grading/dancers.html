@@ -7,7 +7,7 @@
         <div class="card new-dancer">
             <div class="card-header ">
                 <h4 class="card-title">New dancer</h4>
-                <p class="card-category">Add a new dancer to the system</p>
+                <p class="card-category">Add a new dancer to the system. Duplicate names will be ignored.</p>
             </div>
             <div class="card-body ">
                 <form class="form" method="POST" enctype="multipart/form-data" novalidate>
@@ -20,14 +20,14 @@
         <div class="card new-multiple-dancers">
             <div class="card-header ">
                 <h4 class="card-title">Multiple new dancers</h4>
-                <p class="card-category">Add a bunch of new dancer to the system</p>
+                <p class="card-category">Add a bunch of new dancer to the system. Duplicate names will be ignored.</p>
             </div>
             <div class="card-body ">
-                <form class="form" method="POST" enctype="multipart/form-data" novalidate>
-                    {{ multiple_dancers_form.hidden_tag() }}
-                    {{ wtf.form_field(multiple_dancers_form.multiple_dancers_names) }}
-                    {{ wtf.form_field(multiple_dancers_form.multiple_dancers_submit) }}
-                </form>
+                    <form class="form" method="POST" enctype="multipart/form-data" novalidate>
+                        {{ multiple_dancers_form.hidden_tag() }}
+                        {{ wtf.form_field(multiple_dancers_form.multiple_dancers_names) }}
+                        {{ wtf.form_field(multiple_dancers_form.multiple_dancers_submit) }}
+                    </form>
             </div>
         </div>
         {% with all_dancers=all_dancers, close=true %}

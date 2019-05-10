@@ -25,11 +25,15 @@ def load_user(user_id):
 
 class User(UserMixin, db.Model):
     __tablename__ = 'user'
-    user_id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), unique=True)
+    user_id = db.Column(db.Integer, primary_key=True, nullable=False)
+    username = db.Column(db.String(64), unique=True, nullable=False)
     is_active = db.Column(db.Boolean, nullable=False, default=False)
-    password_hash = db.Column(db.String(128))
+    password_hash = db.Column(db.String(128), nullable=False)
     access = db.Column(db.Integer, index=True, nullable=False)
+    discipline_id = db.Column(db.Integer, nullable=False, default=0)
+    level_id = db.Column(db.Integer, nullable=False, default=0)
+    order = db.Column(db.Integer, nullable=True, default=None)
+    start_page = db.Column(db.Boolean, nullable=False, default=False)
 
     def get_id(self):
         return self.user_id
@@ -49,11 +53,27 @@ class User(UserMixin, db.Model):
     def is_adjudicator(self):
         return self.access == ACCESS[ADJUDICATOR]
 
+    def adjudicator_location(self):
+        if self.start_page:
+            return "{} is currently logged in at the home page.".format(self.username)
+        disc = Discipline.query.filter(Discipline.discipline_id == self.discipline_id).first()
+        lvl = Level.query.filter(Level.level_id == self.level_id).first()
+        heat = GradingHeat.query.join(Heat) \
+            .filter(Heat.discipline == disc, Heat.level == lvl, GradingHeat.order == self.order).first()
+        if heat is not None:
+            return "{adj} is currently grading Heat {number} {dance}, for the {disc} {lvl} level."\
+                .format(adj=self.username, dance=heat.dance, number=heat.heat.number, lvl=heat.heat.level,
+                        disc=heat.heat.discipline)
+        elif self.discipline_id > 0 and self.level_id > 0:
+            return "{adj} is currently at the selection page for the {disc} {lvl} level."\
+                .format(adj=self.username, disc=disc, lvl=lvl)
+        return "{} is currently not logged in.".format(self.username)
+
 
 class Discipline(db.Model):
     __tablename__ = 'discipline'
-    discipline_id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), unique=True)
+    discipline_id = db.Column(db.Integer, primary_key=True, nullable=False)
+    name = db.Column(db.String(64), unique=True, nullable=False)
     dances = db.relationship("Dance", back_populates="discipline", cascade='all, delete, delete-orphan')
     heats = db.relationship("Heat", back_populates="discipline", cascade='all, delete, delete-orphan')
 
@@ -63,9 +83,9 @@ class Discipline(db.Model):
 
 class Dance(db.Model):
     __tablename__ = 'dance'
-    dance_id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), unique=True)
-    tag = db.Column(db.String(6), unique=True)
+    dance_id = db.Column(db.Integer, primary_key=True, nullable=False)
+    name = db.Column(db.String(64), unique=True, nullable=False)
+    tag = db.Column(db.String(6), unique=True, nullable=False)
     discipline_id = db.Column(db.Integer, db.ForeignKey('discipline.discipline_id',
                                                         onupdate="CASCADE", ondelete="CASCADE"))
     discipline = db.relationship("Discipline", back_populates="dances")
@@ -76,8 +96,8 @@ class Dance(db.Model):
 
 class Level(db.Model):
     __tablename__ = 'level'
-    level_id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), unique=True)
+    level_id = db.Column(db.Integer, primary_key=True, nullable=False)
+    name = db.Column(db.String(64), unique=True, nullable=False)
     heats = db.relationship("Heat", back_populates="level", cascade='all, delete, delete-orphan')
 
     def __repr__(self):
@@ -108,8 +128,8 @@ class Level(db.Model):
 
 class Dancer(db.Model):
     __tablename__ = 'dancer'
-    dancer_id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(256), unique=True)
+    dancer_id = db.Column(db.Integer, primary_key=True, nullable=False)
+    name = db.Column(db.String(256), unique=True, nullable=False)
     couples_lead = db.relationship("Couple", foreign_keys="Couple.lead_id", back_populates="lead",
                                    cascade='all, delete, delete-orphan')
     couples_follow = db.relationship("Couple", foreign_keys="Couple.follow_id", back_populates="follow",
@@ -130,8 +150,8 @@ heat_couple_table = db.Table(
 class Couple(db.Model):
     __tablename__ = 'couple'
     __table_args__ = (db.UniqueConstraint('lead_id', 'follow_id', name='_lead_follow_uc'),)
-    couple_id = db.Column(db.Integer, primary_key=True)
-    number = db.Column(db.Integer)
+    couple_id = db.Column(db.Integer, primary_key=True, nullable=False)
+    number = db.Column(db.Integer, nullable=False)
     lead_id = db.Column(db.Integer, db.ForeignKey('dancer.dancer_id', onupdate="CASCADE", ondelete="CASCADE"))
     lead = db.relationship("Dancer", back_populates="couples_lead", foreign_keys="Couple.lead_id")
     follow_id = db.Column(db.Integer, db.ForeignKey('dancer.dancer_id', onupdate="CASCADE", ondelete="CASCADE"))
@@ -148,8 +168,8 @@ class Couple(db.Model):
 
 class Heat(db.Model):
     __tablename__ = 'heat'
-    heat_id = db.Column(db.Integer, primary_key=True)
-    number = db.Column(db.Integer)
+    heat_id = db.Column(db.Integer, primary_key=True, nullable=False)
+    number = db.Column(db.Integer, nullable=False)
     level_id = db.Column(db.Integer, db.ForeignKey('level.level_id', onupdate="CASCADE", ondelete="CASCADE"))
     level = db.relationship("Level", back_populates="heats")
     couples = db.relationship("Couple", secondary=heat_couple_table)
@@ -165,10 +185,17 @@ class Heat(db.Model):
     def grading_heats_dance(self, dance=None):
         return self.grading_heats if dance is None else [h for h in self.grading_heats if h.dance == dance]
 
+    def dancers(self):
+        dancers = []
+        for couple in self.couples:
+            dancers.append(couple.lead)
+            dancers.append(couple.follow)
+        return dancers
+
 
 class GradingHeat(db.Model):
     __tablename__ = 'grading_heat'
-    grading_heat_id = db.Column(db.Integer, primary_key=True)
+    grading_heat_id = db.Column(db.Integer, primary_key=True, nullable=False)
     heat_id = db.Column(db.Integer, db.ForeignKey('heat.heat_id', onupdate="CASCADE", ondelete="CASCADE"))
     heat = db.relationship("Heat", back_populates="grading_heats")
     dance_id = db.Column(db.Integer, db.ForeignKey('dance.dance_id', onupdate="CASCADE", ondelete="CASCADE"))

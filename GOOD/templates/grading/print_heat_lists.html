@@ -16,8 +16,8 @@
 
 {% block app_content %}
 <div class="main-panel">
-    <div class="mx-3 my-3" style="width:100%;">
-        <div class="no-print">
+    <div class="mx-3 my-3 w-100">
+        <div class="pl-3 no-print">
             <h2>Print lists</h2>
             <div class="mb-1">There are three different things that can be printed:</div>
             <div>
@@ -32,15 +32,15 @@
                 <input onclick="printItem(this)" type="checkbox" id="couples-list" data-print-id="couples-list">
                 <label for="couples-list">List of all the couples by number</label>
             </div>
-            <div class="mb-1">Select what you wish to print and press the "Print" button.</div>
+            <div class="mb-3">Select what you wish to print and press the "Print" button.</div>
             <button class="btn btn-primary" onclick="window.print()">Print</button>
         </div>
         {% for disc in g.all_disciplines %}
-        <div class="heats-list no-print" style="page-break-after: always;">
-            <h2 class="text-center">{{disc}}</h2>
-            <div class="d-flex" style="justify-content: space-between; width: 100%;">
+        <div class="heats-list no-print page-break-after-always">
+            <h1 class="text-center">{{disc}}</h1>
+            <div class="d-flex justify-content-between w-100">
                 {% for lvl in g.all_levels %}
-                <div class="d-inline-block mx-3" style="vertical-align: top; font-size: 1.125rem;">
+                <div class="d-inline-block mx-3 align-text-top w-25">
                     <h4>{{lvl}} level</h4>
                     <div>
                         {% for heat in print_list[disc][lvl] %}
@@ -59,14 +59,14 @@
             </div>
         </div>
         {% endfor %}
-        <div class="numbers-list no-print" style="page-break-after: always;">
-            <h2 class="text-center">Numbers for the leads</h2>
+        <div class="numbers-list no-print page-break-after-always">
+            <h1 class="text-center mb-1">Numbers for the leads</h1>
             <table class="table table-sm" style="font-size: 11px;">
                 <thead>
                 <tr>
-                    <th>Number</th>
-                    <th>Lead</th>
-                    <th>Follow</th>
+                    <th style="width: 20%">Number</th>
+                    <th style="width: 40%">Lead</th>
+                    <th style="width: 40%">Follow</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -80,14 +80,14 @@
                 </tbody>
             </table>
         </div>
-        <div class="couples-list no-print" style="page-break-after: always;">
-            <h2 class="text-center">Couples by number</h2>
+        <div class="couples-list no-print page-break-after-always">
+            <h1 class="text-center mb-1">Couples by number</h1>
             <table class="table table-sm" style="font-size: 1.25rem;">
                 <thead>
                 <tr>
-                    <th>Number</th>
-                    <th>Lead</th>
-                    <th>Follow</th>
+                    <th style="width: 20%">Number</th>
+                    <th style="width: 40%">Lead</th>
+                    <th style="width: 40%">Follow</th>
                 </tr>
                 </thead>
                 <tbody>

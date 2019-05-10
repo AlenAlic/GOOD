@@ -103,7 +103,8 @@ def create_app():
     @app.before_request
     def before_request_callback():
         g.values = values
-        g.all_adjudicators = User.query.filter(User.access == values.ACCESS[values.ADJUDICATOR]).all()
+        g.all_adjudicators = User.query.filter(User.access == values.ACCESS[values.ADJUDICATOR])\
+            .order_by(User.username).all()
         g.all_levels = Level.query.order_by(Level.level_id).all()
         g.all_disciplines = Discipline.query.order_by(Discipline.discipline_id).all()
         g.all_dances = Dance.query.order_by(Dance.dance_id).all()

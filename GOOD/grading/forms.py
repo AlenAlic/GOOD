@@ -1,11 +1,13 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, SelectField, TextAreaField, SelectMultipleField
+from wtforms import StringField, SubmitField, SelectField, TextAreaField, SelectMultipleField, BooleanField
 from wtforms.validators import DataRequired, NumberRange
-from GOOD.models import Discipline, Dancer, Couple
+from GOOD.models import Discipline, Dancer, Couple, GradingHeat
 
 
 class CreateAdjudicatorForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
+    username = StringField('First name', validators=[DataRequired()],
+                           description="First name only, as this will be the Username and Password for "
+                                       "the adjudicator to log in.")
     adjudicator_submit = SubmitField('Create adjudicator')
 
 
@@ -47,15 +49,18 @@ class DancerForm(FlaskForm):
 class MultipleDancersForm(FlaskForm):
     multiple_dancers_names = TextAreaField(label="Names", validators=[DataRequired()],
                                            description="Excel/Sheets list of names to add.",
-                                           render_kw={"style": "resize:none", "rows": "12"})
-    multiple_dancers_submit = SubmitField('Add list of dancers')
+                                           render_kw={"style": "resize:none", "rows": "12",
+                                                      "placeholder": "Full name\r\nFull name\r\nFull name\r\netc."})
+    multiple_dancers_submit = SubmitField('Add dancers')
 
 
 class MultipleCouplesForm(FlaskForm):
     multiple_couples_names = TextAreaField(label="Couples", validators=[DataRequired()],
                                            description="CSV list (number,lead,follow) of couples to add.",
-                                           render_kw={"style": "resize:none", "rows": "12"})
-    multiple_couples_submit = SubmitField('Add list of couples')
+                                           render_kw={"style": "resize:none", "rows": "12",
+                                                      "placeholder": "1,Lead name,Follow name\r\n2,Lead name,"
+                                                                     "Follow name\r\n3,Lead name,Follow name\r\netc."})
+    multiple_couples_submit = SubmitField('Add couples')
 
 
 class NewCoupleForm(FlaskForm):
@@ -70,7 +75,7 @@ class NewCoupleForm(FlaskForm):
     number = SelectField('Number', validators=[NumberRange(min=1, message="Please select a number")], coerce=int)
     lead = SelectField('Lead', validators=[NumberRange(min=1, message="Please select a lead")], coerce=int)
     follow = SelectField('Follow', validators=[NumberRange(min=1, message="Please select a follow")], coerce=int)
-    submit = SubmitField('Add Couple')
+    submit = SubmitField('Add couple')
 
 
 class CoupleHeatForm(FlaskForm):
@@ -80,6 +85,26 @@ class CoupleHeatForm(FlaskForm):
         self.heat.choices = [(0, "Please select a heat")] + \
                             [(h.heat_id, h) for h in sorted(lvl.heats, key=lambda x: (x.discipline_id, x.number))]
 
-    couple = SelectMultipleField('Couples', coerce=int, render_kw={"size": "8"})
+    couple = SelectMultipleField('Couples', coerce=int, render_kw={"size": "8"},
+                                 description='Select multiple couples at once by pressing Ctrl + "click"')
     heat = SelectField('Heat', validators=[NumberRange(min=1, message="Please select a heat")], coerce=int)
+    submit = SubmitField('Add couples')
+
+
+class CoupleGradingHeatForm(FlaskForm):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.couple.choices = [(0, "Please select a couple")] + \
+                              [(c.couple_id, c) for c in Couple.query.order_by(Couple.number).all()]
+        self.heat.choices = \
+            [(0, "Please select a heat")] + \
+            [(h.grading_heat_id, "{disc} - {lvl} level - Heat {number} ({dance})"
+              .format(disc=h.heat.discipline, lvl=h.heat.level, number=h.heat.number, dance=h.dance))
+             for h in sorted(GradingHeat.query.all(), key=lambda x: (x.heat.discipline.discipline_id, x.heat.level_id,
+                                                                     x.dance.dance_id, x.heat.number))]
+
+    couple = SelectField('Couple', validators=[NumberRange(min=1, message="Please select a couple")], coerce=int)
+    heat = SelectField('Heat', validators=[NumberRange(min=1, message="Please select a heat")], coerce=int)
+    lead_diploma = BooleanField('Diploma Lead', default=True)
+    follow_diploma = BooleanField('Diploma Follow', default=True)
     submit = SubmitField('Add couple')

@@ -17,26 +17,38 @@ def authenticated_only(f):
     return wrapped
 
 
-@socketio.on('adjudicatorJoined')
+@socketio.on('adjudicatorUpdate')
 @authenticated_only
-def adjudicator_joined(message):
+def adjudicator_update(message):
     adjudicator = User.query.filter(User.user_id == message["adjudicatorId"]).first()
-    grading_heat = GradingHeat.query.filter(GradingHeat.grading_heat_id == message["gradingHeatId"]).first()
-    data = {"message": "{adj} entered the {heat} - {level} level.".format(adj=adjudicator.username,
-                                                                          heat=grading_heat.display_name(short=False),
-                                                                          level=grading_heat.heat.level.name)}
-    emit('notifyAdjudicatorJoined', data, broadcast=True)
+    data = {"adjudicatorId": adjudicator.user_id, "message": adjudicator.adjudicator_location()}
+    emit('notifyAdjudicatorUpdate', data, broadcast=True)
 
 
-@socketio.on('adjudicatorLeft')
+@socketio.on('adjudicatorLoggedOut')
 @authenticated_only
-def adjudicator_left(message):
+def adjudicator_logged_out(message):
     adjudicator = User.query.filter(User.user_id == message["adjudicatorId"]).first()
-    grading_heat = GradingHeat.query.filter(GradingHeat.grading_heat_id == message["gradingHeatId"]).first()
-    data = {"message": "{adj} left the {disc} {level} level.".format(adj=adjudicator.username,
-                                                                     disc=grading_heat.heat.discipline.name,
-                                                                     level=grading_heat.heat.level.name)}
-    emit('notifyAdjudicatorLeft', data, broadcast=True)
+    adjudicator.discipline_id = 0
+    adjudicator.level_id = 0
+    adjudicator.order = None
+    adjudicator.start_page = False
+    db.session.commit()
+    data = {"adjudicatorId": adjudicator.user_id, "message": adjudicator.adjudicator_location()}
+    emit('notifyAdjudicatorUpdate', data, broadcast=True)
+
+
+@socketio.on('adjudicatorExit')
+@authenticated_only
+def adjudicator_logged_out(message):
+    adjudicator = User.query.filter(User.user_id == message["adjudicatorId"]).first()
+    adjudicator.discipline_id = 0
+    adjudicator.level_id = 0
+    adjudicator.order = None
+    adjudicator.start_page = False
+    db.session.commit()
+    data = {"adjudicatorId": adjudicator.user_id, "message": adjudicator.adjudicator_location()}
+    emit('notifyAdjudicatorExit', data, broadcast=True)
 
 
 @socketio.on('gradeGiven')

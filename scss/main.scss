@@ -30,7 +30,7 @@ body {
 }
 
 .sidebar-wrapper .sidebar-heading {
-    padding: 0.875rem 1.25rem;
+    padding: 0.375rem 1.25rem;
     font-size: 1.2rem;
 }
 
@@ -65,15 +65,12 @@ body {
 }
 
 .sidebar-list-group-item {
-    padding: 0.375rem 1.25rem !important;
+    padding-left: 2.5rem !important;
     border:none;
 }
 
 .sidebar-box {
    border-top: 1px solid rgba(0, 0, 0, 0.125);
-}
-.sidebar-title {
-   padding-bottom: 1rem;
 }
 
 .base-view {
@@ -176,7 +173,7 @@ body {
 }
 .couples-view {
     grid-template-areas:
-        "new-couples"
+        "new-couple"
         "new-multiple-couples"
         "all-couples";
 }
@@ -332,4 +329,24 @@ body {
 }
 .modal {
     cursor: default;
+}
+
+.page-break-after-always {
+    page-break-after: always;
+}
+
+.no-diploma {
+    opacity: 0.3;
+}
+
+.diploma {
+    cursor: pointer;
+}
+
+.vertical-align-middle {
+    vertical-align: middle !important;
+}
+
+.grade-cell {
+    font-size: 1.25rem;
 }

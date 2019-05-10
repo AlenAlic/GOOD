@@ -9,8 +9,8 @@
     $(document).ready(function() {
         socket = io.connect("http://" + document.domain + ":" + location.port);
         socket.on("updateGrade", data => updateGrade(data));
-        socket.on("notifyAdjudicatorJoined", data => notifyAdjudicatorJoined(data));
-        socket.on("notifyAdjudicatorLeft", data => notifyAdjudicatorLeft(data));
+        socket.on("notifyAdjudicatorUpdate", data => notifyAdjudicatorUpdate(data, true));
+        socket.on("notifyAdjudicatorExit", data => notifyAdjudicatorUpdate(data, false));
     });
     const updateGrade = data => {
         console.log(data);
@@ -36,21 +36,25 @@
         elem.classList.add(flashColor);
         setTimeout(() => {elem.classList.remove(flashColor)}, 700);
     };
-    const notifyAdjudicatorJoined = data => {
-        UIkit.notification({
-            message: data.message,
-            status: 'primary',
-            pos: 'top-center',
-            timeout: 5000
-        });
-    };
-    const notifyAdjudicatorLeft = data => {
-        UIkit.notification({
-            message: data.message,
-            status: 'primary',
-            pos: 'top-center',
-            timeout: 5000
-        });
+    const notifyAdjudicatorUpdate = (data, notification) => {
+        let track = document.getElementById('track-'+data.adjudicatorId);
+        if (!notification) {
+            let oldMessage = track.innerText;
+            setTimeout(() => {
+                if (oldMessage === track.innerText) {
+                    track.innerText = data.message;
+                }
+            }, 3000);
+        }
+        if (notification) {
+            track.innerText = data.message;
+            UIkit.notification({
+                message: data.message,
+                status: 'primary',
+                pos: 'top-center',
+                timeout: 5000
+            });
+        }
     };
 </script>
 {%- endblock head_scripts %}
@@ -59,6 +63,7 @@
 <div class="main-panel">
     <div class="base-view">
         {% if heats|length == 0 %}
+        {% include "cards/track_adjudicators.html" %}
         {% for disc in g.all_disciplines %}
         <div class="card">
             <div class="card-header">
@@ -66,12 +71,13 @@
             </div>
             <div class="card-body">
                 {% for lvl in g.all_levels %}
-                <a class="btn btn-primary d-block my-1" href="{{url_for('grading.live_grading', discipline_id=disc.discipline_id, level_id=lvl.level_id)}}">{{lvl}} level</a>
+                <a class="btn btn-primary d-block my-1" href="{{url_for('grading.live_grading', discipline_id=disc.discipline_id, level_id=lvl.level_id, order=0)}}">{{lvl}} level</a>
                 {% endfor %}
             </div>
         </div>
         {% endfor %}
         {% else %}
+        {% include "cards/track_adjudicators.html" %}
         <div class="card grid-full-width">
             <div class="card-header">
                 <h4 class="card-title">{{grading_heat.heat.discipline}} - {{grading_heat.heat.level}} level</h4>

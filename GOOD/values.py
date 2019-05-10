@@ -5,17 +5,9 @@ TESTING_ENV = 'testing'
 PRODUCTION_ENV = 'production'
 TESTING_ENVIRONMENTS = [DEVELOPMENT_ENV, TESTING_ENV, DEBUG_ENV]
 
-# METHODS
-GET = "GET"
-POST = "POST"
-PUT = "PUT"
-PATCH = "PATCH"
-
 # ACCESS
 ADMIN = 'admin'
 ADJUDICATOR = 'adjudicator'
-
-
 ACCESS = {
     ADMIN: 0,
     ADJUDICATOR: 10,
@@ -25,6 +17,24 @@ ACCESS = {
 # Grade
 def calculate_grade(number):
     return number*0.5+5
+
+
+def formatted_grade(number):
+    return "{:.2f}".format(number)
+
+
+def fancy_grade(number):
+    num = str(number).split(".")
+    if len(num) == 2:
+        if num[1] == "25":
+            return "{grade} {suffix}".format(grade=num[0], suffix="⁺")
+        if num[1] == "5":
+            return "{grade} {suffix}".format(grade=num[0], suffix="½")
+        if num[1] == "75":
+            return "{grade} {suffix}".format(grade=int(num[0])+1, suffix="⁻")
+        if num[1] == "0":
+            return "{grade}".format(grade=num[0])
+    return formatted_grade(number)
 
 
 # DEFAULTS

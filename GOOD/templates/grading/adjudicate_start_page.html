@@ -1,5 +1,28 @@
 {% extends 'adjudicate_base.html' %}
 
+{%- block head_scripts %}
+{{super()}}
+<script type="text/javascript" charset="utf-8">
+    let socket;
+    $(document).ready(function() {
+        socket = io.connect("http://" + document.domain + ":" + location.port);
+        socket.on("connect", () => connected());
+    });
+    window.onbeforeunload = e => {
+        disconnected();
+    };
+    const connected = () => {
+        socket.emit("adjudicatorUpdate", {adjudicatorId: "{{current_user.user_id}}"});
+    };
+    const adjudicatorLoggedOut = () => {
+        socket.emit("adjudicatorLoggedOut", {adjudicatorId: "{{current_user.user_id}}"});
+    };
+    const disconnected = () => {
+        socket.emit("adjudicatorExit", {adjudicatorId: "{{current_user.user_id}}"});
+    };
+</script>
+{%- endblock head_scripts %}
+
 {% block app_content %}
 <div class="mx-3 mt-2">
     <h2>{{current_user}}</h2>
@@ -19,6 +42,6 @@
     </ul>
     {% endfor %}
     <div class="mb-2">When you are done, log out here.</div>
-    <a class="btn btn-danger d-block mb-5" href="{{url_for('main.logout')}}">Log out</a>
+    <a class="btn btn-danger d-block mb-5" onclick="adjudicatorLoggedOut()" href="{{url_for('main.logout')}}">Log out</a>
 </div>
 {% endblock %}

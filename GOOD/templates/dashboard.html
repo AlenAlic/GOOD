@@ -24,6 +24,32 @@
             </div>
         </div>
         {% endif %}
+        <div class="grid-full-width">
+            <div class="card">
+                <div class="card-header ">
+                    <h4 class="card-title">The GOOD system</h4>
+                    <p class="card-category">Welcome to the GOOD system, a tool to help organize a Ballroom dancing graduation.</p>
+                </div>
+                <div class="card-body">
+                    <div>
+                        <h4 class="mb-1 ml-2">Quick-start:</h4>
+                        <ol class="mt-0">
+                            <li><u>Import data:</u> Create accounts for the adjudicators to log in</li>
+                            <li><u>Import data:</u> Create all available disciplines, dances, and levels</li>
+                            <li><u>Import data:</u> Import all dancers that will dancing in the graduation</li>
+                            <li><u>Import data:</u> Create couples from those dancers</li>
+                            <li><u>Configure levels:</u> Create the necessary number heats for each level, and add couples to those heats</li>
+                            <li><u>Manage heats:</u> Select which heat has what dance, which dancer wants a diploma, and then create the heats</li>
+                            <li><u>Manage heats:</u> Place the heats for each level in the order they will be danced in</li>
+                            <li><u>Manage heats:</u> Remove any couples from the non-mandatory dances that do not wish to dance that dance, for each heat</li>
+                            <li><u>Print heat lists:</u> Print heat, and couples lists to hang somewhere</li>
+                            <li><u>Live grading:</u> Watch heats being graded in real time, and track the whereabouts of the adjudicators</li>
+                            <li><u>View final grades:</u> View the average grades given, and copy them to the diplomas</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div>
         {% with all_adjudicators=g.all_adjudicators %}
             {% include "cards/all_adjudicators.html" %}
