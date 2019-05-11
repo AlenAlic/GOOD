@@ -129,7 +129,7 @@ class Level(db.Model):
 class Dancer(db.Model):
     __tablename__ = 'dancer'
     dancer_id = db.Column(db.Integer, primary_key=True, nullable=False)
-    name = db.Column(db.String(256), unique=True, nullable=False)
+    name = db.Column(db.String(160), unique=True, nullable=False)
     couples_lead = db.relationship("Couple", foreign_keys="Couple.lead_id", back_populates="lead",
                                    cascade='all, delete, delete-orphan')
     couples_follow = db.relationship("Couple", foreign_keys="Couple.follow_id", back_populates="follow",
