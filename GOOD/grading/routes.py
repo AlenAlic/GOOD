@@ -477,21 +477,24 @@ def manage_heats():
             for heat in all_heats:
                 for dance in heat.discipline.dances:
                     try:
-                        _ = form[f"heat-{heat.heat_id}-dance-{dance.dance_id}"]
+                        _ = form["heat-{heat_id}-dance-{dance_id}".format(heat_id=heat.heat_id,
+                                                                          dance_id=dance.dance_id)]
                         grading_heat = GradingHeat(heat=heat, dance=dance, order=order)
                         order += 1
                         for adj in g.all_adjudicators:
                             for couple in heat.couples:
                                 grade = Grade(grading_heat=grading_heat, couple=couple, adjudicator=adj)
                                 try:
-                                    _ = form[f"heat-{heat.heat_id}-lead-{couple.couple_id}"]
+                                    _ = form["heat-{heat_id}-lead-{couple_id}".format(heat_id=heat.heat_id,
+                                                                                      couple_id=couple.couple_id)]
                                     grade.lead_diploma = True
                                     if current_app.config.get('DEBUG'):
                                         grade.lead_grade = randint(1, 10)
                                 except KeyError:
                                     grade.lead_diploma = False
                                 try:
-                                    _ = form[f"heat-{heat.heat_id}-follow-{couple.couple_id}"]
+                                    _ = form["heat-{heat_id}-follow-{couple_id}".format(heat_id=heat.heat_id,
+                                                                                        couple_id=couple.couple_id)]
                                     grade.follow_diploma = True
                                     if current_app.config.get('DEBUG'):
                                         grade.follow_grade = randint(1, 10)
@@ -545,7 +548,7 @@ def change_grading_heat_order():
     data = json.loads(request.data)
     heats = GradingHeat.query.filter(GradingHeat.grading_heat_id.in_(data["gradingHeatIds"])).all()
     for heat in heats:
-        heat.order = data["gradingHeatIds"][f"{heat.grading_heat_id}"]
+        heat.order = data["gradingHeatIds"]["{}".format(heat.grading_heat_id)]
     db.session.commit()
     return jsonify({"data": True})
 
