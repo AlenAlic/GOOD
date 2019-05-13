@@ -1,7 +1,7 @@
 {% set create_heats_available = g.all_adjudicators|length > 0 and g.all_adjudicators|length > 0
     and g.all_levels|length > 0 and g.all_disciplines|length > 0 and g.all_dances|length > 0 and g.all_dances|length > 0 %}
 
-<div class="bg-light border-right sidebar-wrapper no-print">
+<div class="bg-light border-right sidebar-wrapper no-print pb-5" style="overflow-y: auto">
     <div class="list-group">
         <a href="{{url_for('admin.index')}}" class="sidebar-heading list-group-item list-group-item-action bg-light">Database Access <i class="fas fa-exclamation-triangle"></i></a>
         <a href="{{url_for('main.dashboard')}}" class="sidebar-heading list-group-item list-group-item-action {% if request.path.startswith('/dashboard') %}list-group-item-primary{% else %}bg-light{% endif %}">Dashboard</a>
@@ -23,5 +23,6 @@
         <a href="{{url_for('grading.print_heat_lists')}}" class="sidebar-heading list-group-item list-group-item-action {% if request.path.startswith('/grading/print_heat_lists') %}list-group-item-primary{% else %}{% if g.all_grading_heats|length == 0 %}disabled bg-warning{% else %}bg-light{% endif %}{% endif %}">Print heat lists</a>
         <a href="{{url_for('grading.live_grading')}}" class="sidebar-heading list-group-item list-group-item-action {% if request.path.startswith('/grading/live_grading') %}list-group-item-primary{% else %}{% if g.all_grading_heats|length == 0 %}disabled bg-warning{% else %}bg-light{% endif %}{% endif %}">Live grading</a>
         <a href="{{url_for('grading.view_grades')}}" class="sidebar-heading list-group-item list-group-item-action {% if request.path.startswith('/grading/view_grades') %}list-group-item-primary{% else %}{% if g.all_grading_heats|length == 0 %}disabled bg-warning{% else %}bg-light{% endif %}{% endif %}">View final grades</a>
+        <a href="{{url_for('grading.reset')}}" class="sidebar-heading list-group-item list-group-item-action {% if request.path.startswith('/grading/reset') %}list-group-item-primary{% else %}bg-light{% endif %}">Reset system</a>
     </div>
 </div>

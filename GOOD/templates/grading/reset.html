@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+
+{% block app_content %}
+<div class="main-panel">
+    <div class="base-view">
+        <div class="grid-full-width">
+            <div class="card">
+                <div class="card-header ">
+                    <h4 class="card-title">System reset</h4>
+                    <p class="card-category">Reset the system so that it can be uses for the next event</p>
+                </div>
+                <div class="card-body ">
+                    <button type="button" class="btn btn-danger my-2" data-toggle="modal" data-target="#resetModal">Reset</button>
+                    <div class="modal fade" id="resetModal" tabindex="-1" role="dialog">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Reset system</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Are you sure you wish to reset the system?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">No, do not reset</button>
+                                    <form class="form" method="POST" enctype="multipart/form-data" novalidate>
+                                        <input class="btn btn-danger mb-1" name="reset_system" id="reset_system" type="submit" value="Yes, reset system">
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

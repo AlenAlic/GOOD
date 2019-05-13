@@ -596,7 +596,7 @@ def change_diploma():
     return jsonify({"diploma": diploma,  "message": message})
 
 
-@bp.route('/print_heat_lists', methods=['GET', 'POST'])
+@bp.route('/print_heat_lists', methods=['GET'])
 @login_required
 @requires_access_level([ACCESS[ADMIN]])
 def print_heat_lists():
@@ -609,7 +609,7 @@ def print_heat_lists():
     return render_template('grading/print_heat_lists.html', print_list=print_list, all_couples=all_couples)
 
 
-@bp.route('/live_grading', methods=['GET', 'POST'])
+@bp.route('/live_grading', methods=['GET'])
 @login_required
 @requires_access_level([ACCESS[ADMIN]])
 def live_grading():
@@ -634,7 +634,7 @@ def live_grading():
                            adjudicators_list=adjudicators_list, zeros=zeros, grades_required=grades_required)
 
 
-@bp.route('/view_grades', methods=['GET', 'POST'])
+@bp.route('/view_grades', methods=['GET'])
 @login_required
 @requires_access_level([ACCESS[ADMIN]])
 def view_grades():
@@ -702,6 +702,25 @@ def view_grades():
                     dancer_list[role][dancer][dance] = formatted_grade(dancer_list[role][dancer][dance])
     return render_template('grading/view_grades.html', dancer_list=dancer_list, level=lvl, discipline=disc,
                            graded=graded)
+
+
+@bp.route('/reset', methods=['GET', 'POST'])
+@login_required
+@requires_access_level([ACCESS[ADMIN]])
+def reset():
+    if request.method == "POST":
+        if "reset_system" in request.form:
+            reset_data()
+            meta = db.metadata
+            for table in reversed(meta.sorted_tables):
+                if table.name != 'user':
+                    print('Table {} has been reset.'.format(table))
+                    # noinspection SqlNoDataSourceInspection
+                    db.session.execute("ALTER TABLE {} AUTO_INCREMENT = 1;".format(table.name))
+            db.session.commit()
+            flash("All tables have been reset.")
+            return redirect(url_for('main.dashboard'))
+    return render_template('grading/reset.html')
 
 
 @bp.route('/adjudicate_start_page', methods=['GET'])
