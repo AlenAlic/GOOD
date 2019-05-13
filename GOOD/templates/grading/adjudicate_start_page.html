@@ -27,6 +27,7 @@
 <div class="mx-3 mt-2">
     <h2>{{current_user}}</h2>
     <div>Welcome to the GOOD system.</div>
+    {% if g.all_grading_heats|length > 0 %}
     <div class="mt-1">Select a level from below to grade.</div>
     {% for disc in g.all_disciplines %}
     <ul class="list-group mb-4">
@@ -41,6 +42,9 @@
         </li>
     </ul>
     {% endfor %}
+    {% else %]
+    <div class="mt-1">There are no levels to grade yet.</div>
+    {% endif %}
     <div class="mb-2">When you are done, log out here.</div>
     <a class="btn btn-danger d-block mb-5" onclick="adjudicatorLoggedOut()" href="{{url_for('main.logout')}}">Log out</a>
 </div>
