@@ -2,6 +2,7 @@
 <html lang="en" {% block html_attribs %}{% endblock html_attribs %}>
 
 {% import 'wtf.html' as wtf %}
+{% set aver = "?201906011740" %}
 
 {% macro flash_messages() %}
 {% with messages = get_flashed_messages(with_categories=true) %}
@@ -34,13 +35,13 @@
     {%- endblock metas %}
 
     {%- block styles %}
-        <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.custom.css')}}">
-        <link rel="stylesheet" href="{{url_for('static', filename='css/main.css')}}">
+        <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.custom.css')}}{{aver}}">
+        <link rel="stylesheet" href="{{url_for('static', filename='css/main.css')}}{{aver}}">
         <link rel="icon" href="data:;base64,iVBORw0KGgo=">
         <link rel="stylesheet" href="{{url_for('static', filename='css/uikit.min.css')}}">
         <link rel="stylesheet" href="{{url_for('static', filename='css/uikit-mod.css')}}">
         <link rel="stylesheet" href="{{url_for('static', filename='font_awesome/css/all.css')}}">
-        <link rel="stylesheet" href="{{url_for('static', filename='css/light.dashboard.cards.css')}}">
+        <link rel="stylesheet" href="{{url_for('static', filename='css/light.dashboard.cards.css')}}{{aver}}">
         <style type="text/css">
         @page {
             size: 210mm 297mm;

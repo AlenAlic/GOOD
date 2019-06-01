@@ -41,6 +41,7 @@ def fancy_grade(number):
 LEAD = "Lead"
 FOLLOW = "Follow"
 FINAL_GRADE = "Final grade"
+GRADE = "Grade"
 # Levels
 D_LEVEL = 'D'
 C_LEVEL = 'C'

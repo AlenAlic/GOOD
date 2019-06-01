@@ -622,7 +622,8 @@ def live_grading():
         .filter(Heat.discipline == disc, Heat.level == lvl, GradingHeat.order == order).first()
     adjudicators_list = {}
     if len(heats) > 0 and grading_heat is not None:
-        adjudicators_list = {adj: [grade for grade in grading_heat.grades if grade.adjudicator == adj] for adj
+        adjudicators_list = {adj: sorted([grade for grade in grading_heat.grades if grade.adjudicator == adj],
+                                         key=lambda x: x.couple.number) for adj
                              in sorted(set([grade.adjudicator for grade in grading_heat.grades]),
                                        key=lambda x: x.username)}
     zeros = {adj: [grade_item.follow_grade for grade_item in adjudicators_list[adj] if grade_item.follow_diploma] +
@@ -640,68 +641,69 @@ def live_grading():
 def view_grades():
     disc = Discipline.query.filter(Discipline.discipline_id == request.args.get('discipline_id', 0, int)).first()
     lvl = Level.query.filter(Level.level_id == request.args.get('level_id', 0, int)).first()
-    dancer_list = {}
+    master_list = {}
+    diplomas = 0
     graded = 0
     if lvl is not None and disc is not None:
         couple_list = lvl.couples(disc)
         grade_list = Grade.query.filter(Grade.couple_id.in_([c.couple_id for c in couple_list])).all()
-        grade_list = [grade for grade in grade_list if grade.grading_heat.heat.discipline == disc]
+        grade_list = [grade for grade in grade_list if grade.grading_heat.heat.discipline == disc
+                      and grade.grading_heat.heat.level == lvl]
         adjudicators_list = set([grade.adjudicator for grade in grade_list])
-        dances = sorted(set([d.grading_heat.dance for d in grade_list]), key=lambda x: x.dance_id)
         master_list = {couple: {} for couple in couple_list}
         for grade in grade_list:
             master_list[grade.couple][grade.grading_heat.dance] = {}
-            master_list[grade.couple][grade.grading_heat.dance][FINAL_GRADE] = {LEAD: 0, FOLLOW: 0}
+            master_list[grade.couple][grade.grading_heat.dance][FINAL_GRADE] = {}
+            master_list[grade.couple][grade.grading_heat.dance][GRADE] = grade
+            if grade.lead_diploma:
+                master_list[grade.couple][grade.grading_heat.dance][FINAL_GRADE][LEAD] = 0
+            if grade.follow_diploma:
+                master_list[grade.couple][grade.grading_heat.dance][FINAL_GRADE][FOLLOW] = 0
         for grade in grade_list:
             master_list[grade.couple][grade.grading_heat.dance][grade.adjudicator] = {}
-            master_list[grade.couple][grade.grading_heat.dance][grade.adjudicator][LEAD] = grade.lead_grade
-            master_list[grade.couple][grade.grading_heat.dance][grade.adjudicator][FOLLOW] = grade.follow_grade
-        for couple in couple_list:
-            for dance in dances:
-                try:
-                    master_list[couple][dance][FINAL_GRADE] = {LEAD: 0, FOLLOW: 0}
-                    for d in [LEAD, FOLLOW]:
-                        grades = [master_list[couple][dance][adj][d] for adj in adjudicators_list]
-                        if min(grades) == 0:
-                            master_list[couple][dance][FINAL_GRADE][d] = 0
-                        else:
-                            master_list[couple][dance][FINAL_GRADE][d] = round(mean(grades), 2)
-                except KeyError:
-                    pass
-        dancer_list = {LEAD: {}, FOLLOW: {}}
-        for grade in grade_list:
             if grade.lead_diploma:
-                dancer_list[LEAD][grade.couple.lead] = {}
+                master_list[grade.couple][grade.grading_heat.dance][grade.adjudicator][LEAD] = grade.lead_grade
             if grade.follow_diploma:
-                dancer_list[FOLLOW][grade.couple.follow] = {}
-            for dance in dances:
-                try:
-                    dancer_list[LEAD][grade.couple.lead][dance] = master_list[grade.couple][dance][FINAL_GRADE][LEAD]
-                except KeyError:
-                    pass
-                try:
-                    dancer_list[FOLLOW][grade.couple.follow][dance] = \
-                        master_list[grade.couple][dance][FINAL_GRADE][FOLLOW]
-                except KeyError:
-                    pass
-        graded = {r: len([d for d in dancer_list[r].keys() if min(dancer_list[r][d].values()) > 0])
-                  for r in [LEAD, FOLLOW]}
-    for role in dancer_list:
-        for dancer in dancer_list[role]:
-            for dance in dancer_list[role][dancer]:
-                dancer_list[role][dancer][dance] = round(calculate_grade(dancer_list[role][dancer][dance]), 2)
-    if len(g.all_adjudicators) == 2:
-        for role in dancer_list:
-            for dancer in dancer_list[role]:
-                for dance in dancer_list[role][dancer]:
-                    dancer_list[role][dancer][dance] = fancy_grade(dancer_list[role][dancer][dance])
-    else:
-        for role in dancer_list:
-            for dancer in dancer_list[role]:
-                for dance in dancer_list[role][dancer]:
-                    dancer_list[role][dancer][dance] = formatted_grade(dancer_list[role][dancer][dance])
-    return render_template('grading/view_grades.html', dancer_list=dancer_list, level=lvl, discipline=disc,
-                           graded=graded)
+                master_list[grade.couple][grade.grading_heat.dance][grade.adjudicator][FOLLOW] = grade.follow_grade
+        for couple in master_list:
+            for dance in master_list[couple]:
+                for d in master_list[couple][dance][FINAL_GRADE]:
+                    grades = [master_list[couple][dance][adj][d] for adj in adjudicators_list]
+                    master_list[couple][dance][FINAL_GRADE][d] = round(mean(grades), 2)
+        for couple in master_list:
+            try:
+                if all([master_list[couple][dance][GRADE].lead_diploma for dance in master_list[couple]]):
+                    diplomas += 1
+                if min([master_list[couple][dance][FINAL_GRADE][LEAD] for dance in master_list[couple]]) > 0:
+                    graded += 1
+            except KeyError:
+                pass
+            try:
+                if all([master_list[couple][dance][GRADE].follow_diploma for dance in master_list[couple]]):
+                    diplomas += 1
+                if min([master_list[couple][dance][FINAL_GRADE][FOLLOW] for dance in master_list[couple]]) > 0:
+                    graded += 1
+            except KeyError:
+                pass
+        for couple in master_list:
+            for dance in master_list[couple]:
+                for d in master_list[couple][dance][FINAL_GRADE]:
+                    master_list[couple][dance][FINAL_GRADE][d] = \
+                        round(calculate_grade(master_list[couple][dance][FINAL_GRADE][d]), 2)
+        if len(g.all_adjudicators) == 2:
+            for couple in master_list:
+                for dance in master_list[couple]:
+                    for d in master_list[couple][dance][FINAL_GRADE]:
+                        master_list[couple][dance][FINAL_GRADE][d] = \
+                            fancy_grade(master_list[couple][dance][FINAL_GRADE][d])
+        else:
+            for couple in master_list:
+                for dance in master_list[couple]:
+                    for d in master_list[couple][dance][FINAL_GRADE]:
+                        master_list[couple][dance][FINAL_GRADE][d] = \
+                            formatted_grade(master_list[couple][dance][FINAL_GRADE][d])
+    return render_template('grading/view_grades.html', master_list=master_list, level=lvl, discipline=disc,
+                           diplomas=diplomas, graded=graded)
 
 
 @bp.route('/reset', methods=['GET', 'POST'])
@@ -755,6 +757,7 @@ def adjudicate_level():
     if grading_heat is not None:
         grades = Grade.query.join(GradingHeat).filter(GradingHeat.grading_heat_id == grading_heat.grading_heat_id,
                                                       Grade.adjudicator == current_user).all()
+        grades = sorted(grades, key=lambda x: x.couple.number)
     heats = GradingHeat.query.join(Heat).filter(Heat.discipline == disc, Heat.level == lvl)\
         .order_by(GradingHeat.order).all()
     zeros = [grade_item.lead_grade for grade_item in grades if grade_item.lead_diploma] + \
