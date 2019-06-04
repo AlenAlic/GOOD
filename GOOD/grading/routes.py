@@ -676,14 +676,14 @@ def view_grades():
                     diplomas += 1
                 if min([master_list[couple][dance][FINAL_GRADE][LEAD] for dance in master_list[couple]]) > 0:
                     graded += 1
-            except KeyError:
+            except (KeyError, ValueError):
                 pass
             try:
                 if all([master_list[couple][dance][GRADE].follow_diploma for dance in master_list[couple]]):
                     diplomas += 1
                 if min([master_list[couple][dance][FINAL_GRADE][FOLLOW] for dance in master_list[couple]]) > 0:
                     graded += 1
-            except KeyError:
+            except (KeyError, ValueError):
                 pass
         for couple in master_list:
             for dance in master_list[couple]:
