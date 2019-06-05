@@ -130,9 +130,9 @@ After installation, Nginx already comes with a test site. remove it first:
 
     sudo rm /etc/nginx/sites-enabled/default
 
- Create a file called *dance. in the folder */etc/nginx/sites-available/*
+ Create a file called *good. in the folder */etc/nginx/sites-available/*
 
-    sudo nano /etc/nginx/sites-available/dance
+    sudo nano /etc/nginx/sites-available/good
 
 Copy the data from below into that file and replace *<username>* with the username of the machine account.
 
