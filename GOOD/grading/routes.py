@@ -527,6 +527,8 @@ def manage_heats():
                         db.session.add(Grade(couple=couple, grading_heat=heat, adjudicator=adj,
                                              lead_diploma=couple_heat_form.lead_diploma.data,
                                              follow_diploma=couple_heat_form.follow_diploma.data))
+                    if couple not in heat.heat:
+                        heat.heat.couples.append(couple)
                     db.session.commit()
                     flash('Added {couple} to Heat {number} ({dance}) in the {disc} {lvl} level.'
                           .format(couple=couple, disc=heat.heat.discipline, lvl=heat.heat.level,
