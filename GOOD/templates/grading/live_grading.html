@@ -91,7 +91,7 @@
                     </a>
                     {% endfor %}
                 </nav>
-                {% for adj in adjudicators_list %}
+                {% for adj in adjudicators_list.keys()|sort(attribute='username') %}
                 <div class="list-group-item active"><b>{{adj}} <span id="graded-{{adj.user_id}}">{{zeros[adj]}}</span>/{{grades_required[adj]}}</b></div>
                 <div class="heat-couple-grade-grid">
                     {% for grade in adjudicators_list[adj] %}
