@@ -43,10 +43,10 @@ FOLLOW = "Follow"
 FINAL_GRADE = "Final grade"
 GRADE = "Grade"
 # Levels
-D_LEVEL = 'D'
-C_LEVEL = 'C'
-B_LEVEL = 'B'
-A_LEVEL = 'A'
+D_LEVEL = 'D (1st year)'
+C_LEVEL = 'C (2nd year)'
+B_LEVEL = 'B (3rd year)'
+A_LEVEL = 'A (4+ years)'
 LEVELS = [D_LEVEL, C_LEVEL, B_LEVEL, A_LEVEL]
 # Disciplines
 BALLROOM = 'Ballroom'

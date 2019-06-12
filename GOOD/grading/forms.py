@@ -96,15 +96,14 @@ class CoupleGradingHeatForm(FlaskForm):
         super().__init__(**kwargs)
         self.couple.choices = [(0, "Please select a couple")] + \
                               [(c.couple_id, c) for c in Couple.query.order_by(Couple.number).all()]
-        self.heat.choices = \
-            [(0, "Please select a heat")] + \
-            [(h.grading_heat_id, "{disc} - {lvl} level - Heat {number} ({dance})"
-              .format(disc=h.heat.discipline, lvl=h.heat.level, number=h.heat.number, dance=h.dance))
-             for h in sorted(GradingHeat.query.all(), key=lambda x: (x.heat.discipline.discipline_id, x.heat.level_id,
-                                                                     x.dance.dance_id, x.heat.number))]
+        self.heat.choices = [(h.grading_heat_id, "{disc} - {lvl} level - Heat {number} ({dance})"
+                              .format(disc=h.heat.discipline, lvl=h.heat.level, number=h.heat.number, dance=h.dance))
+                             for h in sorted(GradingHeat.query.all(),
+                                             key=lambda x: (x.heat.discipline.discipline_id, x.heat.level_id,
+                                                            x.dance.dance_id, x.heat.number))]
 
     couple = SelectField('Couple', validators=[NumberRange(min=1, message="Please select a couple")], coerce=int)
-    heat = SelectField('Heat', validators=[NumberRange(min=1, message="Please select a heat")], coerce=int)
+    heat = SelectMultipleField('Heat', coerce=int, render_kw={"size": "8"})
     lead_diploma = BooleanField('Diploma Lead', default=True)
     follow_diploma = BooleanField('Diploma Follow', default=True)
     submit = SubmitField('Add couple')

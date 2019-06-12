@@ -520,24 +520,25 @@ def manage_heats():
         if couple_heat_form.submit.name in request.form:
             if couple_heat_form.validate_on_submit():
                 couple = Couple.query.filter(Couple.couple_id == couple_heat_form.couple.data).first()
-                heat = GradingHeat.query.filter(GradingHeat.grading_heat_id == couple_heat_form.heat.data).first()
-                check_grades = Grade.query.filter(Grade.grading_heat == heat, Grade.couple == couple).all()
-                if len(check_grades) == 0:
-                    for adj in g.all_adjudicators:
-                        db.session.add(Grade(couple=couple, grading_heat=heat, adjudicator=adj,
-                                             lead_diploma=couple_heat_form.lead_diploma.data,
-                                             follow_diploma=couple_heat_form.follow_diploma.data))
-                    if couple not in heat.heat:
-                        heat.heat.couples.append(couple)
-                    db.session.commit()
-                    flash('Added {couple} to Heat {number} ({dance}) in the {disc} {lvl} level.'
-                          .format(couple=couple, disc=heat.heat.discipline, lvl=heat.heat.level,
-                                  number=heat.heat.number, dance=heat.dance))
-                else:
-                    flash('Couple {couple} is already dancing in Heat {number} ({dance}) in the {disc} {lvl} level.'
-                          .format(couple=couple, disc=heat.heat.discipline, lvl=heat.heat.level,
-                                  number=heat.heat.number,
-                                  dance=heat.dance))
+                for h in couple_heat_form.heat.data:
+                    heat = GradingHeat.query.filter(GradingHeat.grading_heat_id == h).first()
+                    check_grades = Grade.query.filter(Grade.grading_heat == heat, Grade.couple == couple).all()
+                    if len(check_grades) == 0:
+                        for adj in g.all_adjudicators:
+                            db.session.add(Grade(couple=couple, grading_heat=heat, adjudicator=adj,
+                                                 lead_diploma=couple_heat_form.lead_diploma.data,
+                                                 follow_diploma=couple_heat_form.follow_diploma.data))
+                        if couple not in heat.heat.couples:
+                            heat.heat.couples.append(couple)
+                        db.session.commit()
+                        flash('Added {couple} to Heat {number} ({dance}) in the {disc} {lvl} level.'
+                              .format(couple=couple, disc=heat.heat.discipline, lvl=heat.heat.level,
+                                      number=heat.heat.number, dance=heat.dance))
+                    else:
+                        flash('Couple {couple} is already dancing in Heat {number} ({dance}) in the {disc} {lvl} level.'
+                              .format(couple=couple, disc=heat.heat.discipline, lvl=heat.heat.level,
+                                      number=heat.heat.number,
+                                      dance=heat.dance))
                 return redirect(url_for('grading.manage_heats'))
     return render_template('grading/manage_heats.html', all_levels=all_levels, all_disciplines=all_disciplines,
                            couple_heat_form=couple_heat_form)
@@ -565,6 +566,9 @@ def remove_grade_from_grading_heat():
     grades = Grade.query.filter(Grade.couple == couple, Grade.grading_heat == grading_heat).all()
     for grade in grades:
         db.session.delete(grade)
+    heat_couples = set([c for h in grading_heat.heat.grading_heats for c in h.couples()])
+    if couple not in heat_couples and couple in grading_heat.heat.couples:
+        grading_heat.heat.couples.remove(couple)
     db.session.commit()
     return jsonify({
         "removed": len(Grade.query.filter(Grade.couple == couple, Grade.grading_heat == grading_heat).all()) == 0,
