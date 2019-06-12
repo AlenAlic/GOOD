@@ -35,7 +35,7 @@
                                 <th style="width: 22%;"><i class="fas fa-mars"></i></th>
                                 <th style="width: 22%;"><i class="fas fa-venus"></i></th>
                             </tr>
-                            {% for dance in master_list[couple].keys()|sort(attribute=dance_id) %}
+                            {% for dance in master_list[couple].keys()|sort(attribute='dance_id') %}
                                 <tr>
                                 <td class="vertical-align-middle">{{dance}}</td>
                                 {% if master_list[couple][dance][g.values.GRADE].lead_diploma %}
