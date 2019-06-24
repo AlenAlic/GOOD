@@ -30,17 +30,21 @@
     {% if g.all_grading_heats|length > 0 %}
     <div class="mt-1">Select a level from below to grade.</div>
     {% for disc in g.all_disciplines %}
-    <ul class="list-group mb-4">
-        <li class="list-group-item list-group-item-primary">{{disc}}</li>
-        <li class="list-group-item list-group-item-small px-0 py-0">
-            {% for lvl in g.all_levels %}
-            <a class="btn btn-primary d-block mx-2 my-2"
-               href="{{url_for('grading.adjudicate_level', discipline_id=disc.discipline_id, level_id=lvl.level_id)}}">
-                {{lvl}} level
-            </a>
-            {% endfor %}
-        </li>
-    </ul>
+        {% if disc.adjudicating_discipline(current_user) %}
+        <ul class="list-group mb-4">
+            <li class="list-group-item list-group-item-primary">{{disc}}</li>
+            <li class="list-group-item list-group-item-small px-0 py-0">
+                {% for lvl in g.all_levels %}
+                    {% if lvl.disc_grading_heat(disc)|length > 0 %}
+                        <a class="btn btn-primary d-block mx-2 my-2"
+                           href="{{url_for('grading.adjudicate_level', discipline_id=disc.discipline_id, level_id=lvl.level_id)}}">
+                            {{lvl}} level
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            </li>
+        </ul>
+        {% endif %}
     {% endfor %}
     {% else %}
     <div class="mt-1">There are no levels to grade yet.</div>

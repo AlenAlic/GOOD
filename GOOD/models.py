@@ -80,6 +80,11 @@ class Discipline(db.Model):
     def __repr__(self):
         return '{}'.format(self.name)
 
+    def adjudicating_discipline(self, adjudicator):
+        heats = GradingHeat.query.all()
+        heats = [h for h in heats if h.heat.discipline == self and h.adjudicating_heat(adjudicator)]
+        return len(heats) > 0
+
 
 class Dance(db.Model):
     __tablename__ = 'dance'
@@ -225,6 +230,9 @@ class GradingHeat(db.Model):
                 return list(grades_list.values())[0]
             except IndexError:
                 return list()
+
+    def adjudicating_heat(self, adjudicator):
+        return len([grade for grade in self.grades if grade.adjudicator == adjudicator]) > 0
 
 
 class Grade(db.Model):

@@ -71,7 +71,9 @@
             </div>
             <div class="card-body">
                 {% for lvl in g.all_levels %}
-                <a class="btn btn-primary d-block my-1" href="{{url_for('grading.live_grading', discipline_id=disc.discipline_id, level_id=lvl.level_id, order=0)}}">{{lvl}} level</a>
+                    {% if lvl.disc_grading_heat(disc)|length > 0 %}
+                        <a class="btn btn-primary d-block my-1" href="{{url_for('grading.live_grading', discipline_id=disc.discipline_id, level_id=lvl.level_id, order=0)}}">{{lvl}} level</a>
+                    {% endif %}
                 {% endfor %}
             </div>
         </div>

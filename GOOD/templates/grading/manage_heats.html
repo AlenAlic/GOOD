@@ -101,13 +101,13 @@
                 </div>
                 <div class="card-body">
                     <div>
-                        From the data below, heats with the checked dances, the shown couples and who wants a diploma or not can be created.
+                        From the data below, heats with the checked dances, the shown couples, and who wants a diploma or not can be created.
                     </div>
                     <div>
                         This will create all heats at once, and heats cannot be added or removed, so make sure that the heat data is correct.
                     </div>
                     <div>
-                        Couples can be change, so if there are couples that do no wish to dance all dances in that heat, you can remove them after the heats have been created.
+                        Couples can be changed, so if there are couples that do not wish to dance all dances in that heat, you can remove them after the heats have been created.
                     </div>
                     <form class="form" method="POST" enctype="multipart/form-data" novalidate>
                         <div>
@@ -132,50 +132,76 @@
                                 </div>
                             </div>
                         </div>
-                        {% for disc in all_disciplines %}
+                        <h2>Adjudicators</h2>
+                        <div>Choose what discipline the adjudicators will adjudicate.</div>
+                        <table class="table table-sm">
+                            <tbody>
+                            <tr>
+                                <th>Adjudicator</th>
+                                <th colspan="{{ g.all_disciplines|length }}">Adjudicating discipline</th>
+                            </tr>
+                            {% for adj in g.all_adjudicators %}
+                            <tr>
+                                <td>{{ adj }}</td>
+                                {% for disc in g.all_disciplines %}
+                                    <td>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="adjudicator-{{adj.user_id}}-discipline-{{disc.discipline_id}}"
+                                                       id="adjudicator-{{adj.user_id}}-discipline-{{disc.discipline_id}}" checked>
+                                                <label class="form-check-label" for="adjudicator-{{adj.user_id}}-discipline-{{disc.discipline_id}}">{{disc}}</label>
+                                        </div>
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                        {% for disc in g.all_disciplines %}
                         <h2>{{disc}}</h2>
                         <table class="table table-sm">
                             <tbody>
-                            {% for lvl in all_levels %}
-                            <tr>
-                                <th style="width: 15%;">{{lvl}} level</th>
-                                <th style="width: 30%;">Dances</th>
-                                <th style="width: 30%;">Couples</th>
-                                <th style="width: 25%;">Diploma's</th>
-                            </tr>
-                            {% for heat in lvl.disc_heat(disc) %}
-                            <tr>
-                                <td>{{heat}}</td>
-                                <td>
-                                    {% for dance in disc.dances %}
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="heat-{{heat.heat_id}}-dance-{{dance.dance_id}}"
-                                               id="heat-{{heat.heat_id}}-dance-{{dance.dance_id}}" {% if dance.name in g.values.BASIC_DANCES or dance.name in g.values.MANDATORY_DANCES[lvl.name] %}checked{% endif %}>
-                                        <label class="form-check-label" for="heat-{{heat.heat_id}}-dance-{{dance.dance_id}}">{{dance}}</label>
-                                    </div>
-                                    {% endfor %}
-                                </td>
-                                <td>
-                                    {% for c in heat.couples %}
-                                    <div>{{c}}</div>
-                                    {% endfor %}
-                                </td>
-                                <td>
-                                    {% for c in heat.couples %}
-                                    <div>
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="checkbox" name="heat-{{heat.heat_id}}-lead-{{c.couple_id}}" id="lead-{{c.couple_id}}" checked value="diploma">
-                                            <label class="form-check-label" for="lead-{{c.couple_id}}">Lead</label>
+                            {% for lvl in g.all_levels %}
+                                {% if lvl.disc_heat(disc)|length > 0 %}
+                                <tr>
+                                    <th style="width: 15%;">{{lvl}} level</th>
+                                    <th style="width: 30%;">Dances</th>
+                                    <th style="width: 30%;">Couples</th>
+                                    <th style="width: 25%;">Diploma's</th>
+                                </tr>
+                                {% for heat in lvl.disc_heat(disc) %}
+                                <tr>
+                                    <td>{{heat}}</td>
+                                    <td>
+                                        {% for dance in disc.dances %}
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="heat-{{heat.heat_id}}-dance-{{dance.dance_id}}"
+                                                   id="heat-{{heat.heat_id}}-dance-{{dance.dance_id}}" {% if dance.name in g.values.BASIC_DANCES or dance.name in g.values.MANDATORY_DANCES[lvl.name] or dance.discipline.name not in g.values.DISCIPLINES %}checked{% endif %}>
+                                            <label class="form-check-label" for="heat-{{heat.heat_id}}-dance-{{dance.dance_id}}">{{dance}}</label>
                                         </div>
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="checkbox" name="heat-{{heat.heat_id}}-follow-{{c.couple_id}}" id="follow-{{c.couple_id}}" checked value="diploma">
-                                            <label class="form-check-label" for="follow-{{c.couple_id}}">Follow</label>
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        {% for c in heat.couples %}
+                                        <div>{{c}}</div>
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        {% for c in heat.couples %}
+                                        <div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="checkbox" name="heat-{{heat.heat_id}}-lead-{{c.couple_id}}" id="lead-{{c.couple_id}}" checked value="diploma">
+                                                <label class="form-check-label" for="lead-{{c.couple_id}}">Lead</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="checkbox" name="heat-{{heat.heat_id}}-follow-{{c.couple_id}}" id="follow-{{c.couple_id}}" checked value="diploma">
+                                                <label class="form-check-label" for="follow-{{c.couple_id}}">Follow</label>
+                                            </div>
                                         </div>
-                                    </div>
-                                    {% endfor %}
-                                </td>
-                            </tr>
-                            {% endfor %}
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% endif %}
                             {% endfor %}
                             </tbody>
                         </table>
@@ -245,72 +271,74 @@
                 </form>
             </div>
         </div>
-        {% for disc in all_disciplines %}
+        {% for disc in g.all_disciplines %}
         <div class="grid-full-width">
             <div class="card">
                 <div class="card-header py-2">
                     <h4 class="card-title">{{disc}}</h4>
                 </div>
                 <div class="card-body px-0 py-0">
-                    {% for lvl in all_levels %}
-                    <div class="card mb-0">
-                        <a class="card-header py-2 bg-light text-decoration-none" data-toggle="collapse" href="#collapse-lvl-{{lvl.level_id}}-disc-{{disc.discipline_id}}">
-                            <h4 class="card-title">{{lvl}} level</h4>
-                        </a>
-                        <div class="card-body px-0 py-0 collapse show" id="collapse-lvl-{{lvl.level_id}}-disc-{{disc.discipline_id}}">
-                            <ul class="list-group sortable" data-discipline-id="{{disc.discipline_id}}" data-level-id="{{lvl.level_id}}">
-                                {% for grading_heat in lvl.disc_grading_heat(disc)|sort(attribute='order') %}
-                                <li class="list-group-item" data-grading-heat-id="{{grading_heat.grading_heat_id}}">
-                                    <div class="text-center text-uppercase"><b>{{grading_heat.display_name(short=false)}}</b></div>
-                                    <div class="heat-couple-grid mt-2 d-none">
-                                        {% for grade in grading_heat.adjudicator_grades()|sort(attribute='couple.number') %}
-                                        <div class="heat-couple-box px-2 py-1">
-                                            <div>
-                                                <i class="no-wrap">Couple {{grade.couple.number}}</i>
-                                                <button type="button" class="close" data-toggle="modal" data-target="#delete-grade-{{grade.grading_id}}">
-                                                    <span>&times;</span>
-                                                </button>
-                                                <div class="modal fade" id="delete-grade-{{grade.grading_id}}" tabindex="-1" role="dialog" aria-hidden="true">
-                                                    <div class="modal-dialog modal-lg" role="document">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                                <h5 class="modal-title">Delete couple</h5>
-                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                    <span aria-hidden="true">&times;</span>
-                                                                </button>
-                                                            </div>
-                                                            <div class="modal-body">
-                                                                <p>Are you sure you wish to remove couple number {{grade.couple.number}} {{grade.couple.lead}} and {{grade.couple.follow}} from the {{grade.grading_heat.dance}} Heat {{grade.grading_heat.heat.number}}?</p>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">No, leave the couple</button>
-                                                                <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="removeCouple(this)"
-                                                                        data-couple-id="{{grade.couple.couple_id}}" data-grading-heat-id="{{grade.grading_heat.grading_heat_id}}">
-                                                                    Yes, remove couple
-                                                                </button>
+                    {% for lvl in g.all_levels %}
+                        {% if lvl.disc_grading_heat(disc)|length > 0 %}
+                        <div class="card mb-0">
+                            <a class="card-header py-2 bg-light text-decoration-none" data-toggle="collapse" href="#collapse-lvl-{{lvl.level_id}}-disc-{{disc.discipline_id}}">
+                                <h4 class="card-title">{{lvl}} level</h4>
+                            </a>
+                            <div class="card-body px-0 py-0 collapse show" id="collapse-lvl-{{lvl.level_id}}-disc-{{disc.discipline_id}}">
+                                <ul class="list-group sortable" data-discipline-id="{{disc.discipline_id}}" data-level-id="{{lvl.level_id}}">
+                                    {% for grading_heat in lvl.disc_grading_heat(disc)|sort(attribute='order') %}
+                                    <li class="list-group-item" data-grading-heat-id="{{grading_heat.grading_heat_id}}">
+                                        <div class="text-center text-uppercase"><b>{{grading_heat.display_name(short=false)}}</b></div>
+                                        <div class="heat-couple-grid mt-2 d-none">
+                                            {% for grade in grading_heat.adjudicator_grades()|sort(attribute='couple.number') %}
+                                            <div class="heat-couple-box px-2 py-1">
+                                                <div>
+                                                    <i class="no-wrap">Couple {{grade.couple.number}}</i>
+                                                    <button type="button" class="close" data-toggle="modal" data-target="#delete-grade-{{grade.grading_id}}">
+                                                        <span>&times;</span>
+                                                    </button>
+                                                    <div class="modal fade" id="delete-grade-{{grade.grading_id}}" tabindex="-1" role="dialog" aria-hidden="true">
+                                                        <div class="modal-dialog modal-lg" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title">Delete couple</h5>
+                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <p>Are you sure you wish to remove couple number {{grade.couple.number}} {{grade.couple.lead}} and {{grade.couple.follow}} from the {{grade.grading_heat.dance}} Heat {{grade.grading_heat.heat.number}}?</p>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">No, leave the couple</button>
+                                                                    <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="removeCouple(this)"
+                                                                            data-couple-id="{{grade.couple.couple_id}}" data-grading-heat-id="{{grade.grading_heat.grading_heat_id}}">
+                                                                        Yes, remove couple
+                                                                    </button>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
+                                                <div class="no-wrap mt-1">
+                                                    {{grade.couple.lead}}
+                                                    <i onclick="changeDiploma(this)" data-grade-id="{{grade.grading_id}}" data-role="lead" data-diploma="{% if grade.lead_diploma %}1{% else %}0{% endif %}"
+                                                       class="fas fa-scroll float-right {% if not grade.lead_diploma %}no-diploma{% endif %} diploma"></i>
+                                                </div>
+                                                <div class="no-wrap">
+                                                    {{grade.couple.follow}}
+                                                    <i onclick="changeDiploma(this)" data-grade-id="{{grade.grading_id}}" data-role="follow" data-diploma="{% if grade.follow_diploma %}1{% else %}0{% endif %}"
+                                                       class="fas fa-scroll float-right {% if not grade.follow_diploma %}no-diploma{% endif %} diploma"></i>
+                                                </div>
                                             </div>
-                                            <div class="no-wrap mt-1">
-                                                {{grade.couple.lead}}
-                                                <i onclick="changeDiploma(this)" data-grade-id="{{grade.grading_id}}" data-role="lead" data-diploma="{% if grade.lead_diploma %}1{% else %}0{% endif %}"
-                                                   class="fas fa-scroll float-right {% if not grade.lead_diploma %}no-diploma{% endif %} diploma"></i>
-                                            </div>
-                                            <div class="no-wrap">
-                                                {{grade.couple.follow}}
-                                                <i onclick="changeDiploma(this)" data-grade-id="{{grade.grading_id}}" data-role="follow" data-diploma="{% if grade.follow_diploma %}1{% else %}0{% endif %}"
-                                                   class="fas fa-scroll float-right {% if not grade.follow_diploma %}no-diploma{% endif %} diploma"></i>
-                                            </div>
+                                            {% endfor %}
                                         </div>
-                                        {% endfor %}
-                                    </div>
-                                </li>
-                                {% endfor %}
-                            </ul>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
                         </div>
-                    </div>
+                        {% endif %}
                     {% endfor %}
                 </div>
             </div>

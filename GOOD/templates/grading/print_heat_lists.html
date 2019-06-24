@@ -40,21 +40,23 @@
             <h1 class="text-center">{{disc}}</h1>
             <div class="d-flex justify-content-between w-100">
                 {% for lvl in g.all_levels %}
-                <div class="d-inline-block mx-3 align-text-top w-25">
-                    <h4>{{lvl}} level</h4>
-                    <div>
-                        {% for heat in print_list[disc][lvl] %}
+                    {% if print_list[disc][lvl]|length > 0 %}
+                    <div class="d-inline-block mx-3 align-text-top w-25">
+                        <h4>{{lvl}} level</h4>
                         <div>
-                            <b class="my-0">{{heat.dance}} - Heat {{heat.heat.number}}</b>
+                            {% for heat in print_list[disc][lvl] %}
                             <div>
-                                {% for couple in heat.couples() %}
-                                <span class="mr-2">{{couple.number}}</span>
-                                {% endfor %}
+                                <b class="my-0">{{heat.dance}} - Heat {{heat.heat.number}}</b>
+                                <div>
+                                    {% for couple in heat.couples() %}
+                                    <span class="mr-2">{{couple.number}}</span>
+                                    {% endfor %}
+                                </div>
                             </div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
                     </div>
-                </div>
+                    {% endif %}
                 {% endfor %}
             </div>
         </div>

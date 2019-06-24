@@ -52,6 +52,7 @@ LEVELS = [D_LEVEL, C_LEVEL, B_LEVEL, A_LEVEL]
 BALLROOM = 'Ballroom'
 STANDARD = 'Standard'
 LATIN = 'Latin'
+DISCIPLINES = [STANDARD, LATIN]
 # Dances
 SLOW_WALTZ = "Slow Waltz"
 TANGO = "Tango"

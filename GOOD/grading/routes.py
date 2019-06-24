@@ -251,7 +251,7 @@ def dancers():
                 import_list = multiple_dancers_form.multiple_dancers_names.data.split('\r\n')
                 counter = {'success': 0, 'duplicates': 0, 'error': 0}
                 for dancer_name in import_list:
-                    dancer_name = dancer_name.split(",")[0]
+                    dancer_name = dancer_name.split(",")[0].strip()
                     if len(dancer_name) >= 3:
                         check = Dancer.query.filter(Dancer.name == dancer_name).first()
                         if check is None:
@@ -466,13 +466,20 @@ def remove_dancer_from_heat():
 @login_required
 @requires_access_level([ACCESS[ADMIN]])
 def manage_heats():
-    all_levels = Level.query.order_by(Level.level_id).all()
-    all_disciplines = Discipline.query.order_by(Discipline.discipline_id).all()
     couple_heat_form = CoupleGradingHeatForm()
     if request.method == 'POST':
         if "create_heats" in request.form:
             form = {k: v for k, v in request.form.items()}
             all_heats = Heat.query.order_by(Heat.heat_id).all()
+            adjudicate = {adj: {disc: False for disc in g.all_disciplines} for adj in g.all_adjudicators}
+            for adj in g.all_adjudicators:
+                for disc in g.all_disciplines:
+                    try:
+                        _ = form["adjudicator-{adj_id}-discipline-{disc_id}".format(adj_id=adj.user_id,
+                                                                                    disc_id=disc.discipline_id)]
+                        adjudicate[adj][disc] = True
+                    except KeyError:
+                        pass
             order = 0
             for heat in all_heats:
                 for dance in heat.discipline.dances:
@@ -482,26 +489,27 @@ def manage_heats():
                         grading_heat = GradingHeat(heat=heat, dance=dance, order=order)
                         order += 1
                         for adj in g.all_adjudicators:
-                            for couple in heat.couples:
-                                grade = Grade(grading_heat=grading_heat, couple=couple, adjudicator=adj)
-                                try:
-                                    _ = form["heat-{heat_id}-lead-{couple_id}".format(heat_id=heat.heat_id,
-                                                                                      couple_id=couple.couple_id)]
-                                    grade.lead_diploma = True
-                                    if current_app.config.get('DEBUG'):
-                                        grade.lead_grade = randint(1, 10)
-                                except KeyError:
-                                    grade.lead_diploma = False
-                                try:
-                                    _ = form["heat-{heat_id}-follow-{couple_id}".format(heat_id=heat.heat_id,
-                                                                                        couple_id=couple.couple_id)]
-                                    grade.follow_diploma = True
-                                    if current_app.config.get('DEBUG'):
-                                        grade.follow_grade = randint(1, 10)
-                                except KeyError:
-                                    grade.follow_diploma = False
-                                if grade.lead_diploma or grade.follow_diploma:
-                                    grading_heat.grades.append(grade)
+                            if adjudicate[adj][heat.discipline]:
+                                for couple in heat.couples:
+                                    grade = Grade(grading_heat=grading_heat, couple=couple, adjudicator=adj)
+                                    try:
+                                        _ = form["heat-{heat_id}-lead-{couple_id}".format(heat_id=heat.heat_id,
+                                                                                          couple_id=couple.couple_id)]
+                                        grade.lead_diploma = True
+                                        if current_app.config.get('DEBUG'):
+                                            grade.lead_grade = randint(1, 10)
+                                    except KeyError:
+                                        grade.lead_diploma = False
+                                    try:
+                                        _ = form["heat-{heat_id}-follow-{couple_id}".format(heat_id=heat.heat_id,
+                                                                                            couple_id=couple.couple_id)]
+                                        grade.follow_diploma = True
+                                        if current_app.config.get('DEBUG'):
+                                            grade.follow_grade = randint(1, 10)
+                                    except KeyError:
+                                        grade.follow_diploma = False
+                                    if grade.lead_diploma or grade.follow_diploma:
+                                        grading_heat.grades.append(grade)
                     except KeyError:
                         pass
             db.session.commit()
@@ -540,8 +548,7 @@ def manage_heats():
                                       number=heat.heat.number,
                                       dance=heat.dance))
                 return redirect(url_for('grading.manage_heats'))
-    return render_template('grading/manage_heats.html', all_levels=all_levels, all_disciplines=all_disciplines,
-                           couple_heat_form=couple_heat_form)
+    return render_template('grading/manage_heats.html', couple_heat_form=couple_heat_form)
 
 
 @bp.route('/change_grading_heat_order', methods=['PATCH'])
