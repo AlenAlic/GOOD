@@ -594,11 +594,15 @@ def change_diploma():
     grade = Grade.query.filter(Grade.grading_id == data["gradeId"]).first()
     diploma = not data["diploma"]
     if data["role"] == "lead":
-        grade.lead_diploma = diploma
         dancer = grade.couple.lead
     else:
-        grade.follow_diploma = diploma
         dancer = grade.couple.follow
+    grades = Grade.query.filter(Grade.couple == grade.couple, Grade.grading_heat == grade.grading_heat).all()
+    for gr in grades:
+        if data["role"] == "lead":
+            gr.lead_diploma = diploma
+        else:
+            gr.follow_diploma = diploma
     db.session.commit()
     if diploma:
         message = "{dancer} will get graded on the {dance} {lvl} level."\
