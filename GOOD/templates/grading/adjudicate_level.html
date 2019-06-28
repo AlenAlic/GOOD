@@ -109,7 +109,7 @@
             {% if grade.lead_diploma %}
             <div class="button-grade-grid mb-3">
                 <i class="fas fa-mars slider-icon"></i>
-                <div class="button-grade-grid-buttons">
+                <div class="button-grade-grid-buttons pr-5">
                 {% for num in range(2, 11) %}
                 <input type="radio" id="radio-grade-lead-{{grade.grading_id}}-{{num}}" name="radio-grade-lead-{{grade.grading_id}}" class="grade-checkbox d-none"
                        value="{{num}}" data-grade-id="{{grade.grading_id}}" data-grade-role="lead" onclick="gradeGiven(this)" {% if grade.lead_grade == num %}checked{% endif %}>
@@ -123,7 +123,7 @@
             {% if grade.follow_diploma %}
             <div class="button-grade-grid">
                 <i class="fas fa-venus slider-icon"></i>
-                <div class="button-grade-grid-buttons">
+                <div class="button-grade-grid-buttons pr-5">
                 {% for num in range(2, 11) %}
                 <input type="radio" id="radio-grade-follow-{{grade.grading_id}}-{{num}}" name="radio-grade-follow-{{grade.grading_id}}" class="grade-checkbox d-none"
                        value="{{num}}" data-grade-id="{{grade.grading_id}}" data-grade-role="follow" onclick="gradeGiven(this)" {% if grade.follow_grade == num %}checked{% endif %}>
