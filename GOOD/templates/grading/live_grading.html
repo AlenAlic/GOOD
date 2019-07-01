@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap-slider.css')}}">
 <script type="text/javascript" charset="utf-8">
     let socket;
+    const fadeDelay = 800;
     $(document).ready(function() {
         socket = io.connect("http://" + document.domain + ":" + location.port);
         socket.on("updateGrade", data => updateGrade(data));
@@ -16,12 +17,15 @@
         let grades = document.getElementById('grade-' + data.gradeId);
         if (data.grade == 5) {data.grade = "X"}
         let lead = grades.querySelector('.grade-lead');
+        let indicatorLead = grades.querySelector('.indicator-lead');
         let follow = grades.querySelector('.grade-follow');
-        if (data.role === "lead") {changeNumber(lead,data)}
-        else {changeNumber(follow,data)}
+        let indicatorFollow = grades.querySelector('.indicator-follow');
+        if (data.role === "lead") {changeNumber(lead, indicatorLead, data)}
+        else {changeNumber(follow, indicatorFollow, data)}
         let check =  grades.querySelector('.grade-check');
         if (lead.innerText !== "X" && follow.innerText !== "X") {
             check.classList.remove("d-none");
+            setTimeout(() => {grades.classList.add(successColor);}, fadeDelay);
         } else {
             check.classList.add("d-none");
         }
@@ -30,16 +34,25 @@
             graded.innerText = data.graded;
             if (data.graded === data.dancers) {
                 let adjudicatorBar = graded.parentNode.parentNode;
-                adjudicatorBar.classList.remove("active");
-                adjudicatorBar.classList.add("list-group-item-success")
+                setTimeout(() => {
+                    adjudicatorBar.classList.remove("active");
+                    adjudicatorBar.classList.add("list-group-item-success");
+                }, fadeDelay);
             }
         }
     };
     const flashColor = 'table-primary';
-    const changeNumber = (elem, data) => {
+    const successColor = 'table-success';
+    const changeNumber = (elem, indicator, data) => {
         elem.innerText = data.grade;
         elem.classList.add(flashColor);
-        setTimeout(() => {elem.classList.remove(flashColor)}, 700);
+        indicator.classList.add(flashColor);
+        setTimeout(() => {
+            elem.classList.remove(flashColor);
+            elem.classList.add(successColor);
+            indicator.classList.remove(flashColor);
+            indicator.classList.add(successColor);
+        }, fadeDelay);
     };
     const notifyAdjudicatorUpdate = (data, notification) => {
         let track = document.getElementById('track-'+data.adjudicatorId);
@@ -102,26 +115,26 @@
                     {% endfor %}
                 </nav>
                 {% for adj in adjudicators_list.keys()|sort(attribute='username') %}
-                <div class="list-group-item {% if zeros[adj] == grades_required[adj] %}list-group-item-success{% else %}active{% endif %}"><b>{{adj}} - <span id="graded-{{adj.user_id}}">{{zeros[adj]}}</span>/{{grades_required[adj]}} grades given</b></div>
+                <div class="list-group-item {% if zeros[adj] == grades_required[adj] %}list-group-item-success{% else %}active{% endif %} flash-transition"><b>{{adj}} - <span id="graded-{{adj.user_id}}">{{zeros[adj]}}</span>/{{grades_required[adj]}} grades given</b></div>
                 <div class="heat-couple-grade-grid">
                     {% for grade in adjudicators_list[adj] %}
                     <div>
                         <table class="table table-sm table-bordered live-grading-table">
-                            <tbody id="grade-{{grade.grading_id}}">
+                            <tbody id="grade-{{grade.grading_id}}" class="flash-transition {% if (not grade.lead_diploma or grade.lead_grade > 0) and (not grade.follow_diploma or grade.follow_grade > 0) %}table-success{% endif %}">
                                 <tr><td colspan="2"><b class="no-wrap">Couple {{grade.couple.number}} <i class="fas fa-check-circle grade-check {% if grade.lead_grade == 0 and grade.lead_diploma or grade.follow_grade == 0 and grade.follow_diploma %}d-none{% endif %}" ></i></b> </td></tr>
                                 <tr>
-                                    <td><i class="fas fa-mars"></i></td>
-                                    <td><i class="fas fa-venus"></i></td>
+                                    <td class="indicator-lead flash-transition {% if not grade.lead_diploma %}table-secondary{% endif %} {% if grade.lead_grade > 0 %}table-success{% endif %}"><i class="fas fa-mars"></i></td>
+                                    <td class="indicator-follow flash-transition {% if not grade.follow_diploma %}table-secondary{% endif %} {% if grade.follow_grade > 0 %}table-success{% endif %}"><i class="fas fa-venus"></i></td>
                                 </tr>
                                 <tr>
-                                    <td class="grade-lead {% if not grade.lead_diploma %}table-secondary{% endif %} flash-transition">
+                                    <td class="grade-lead {% if not grade.lead_diploma %}table-secondary{% endif %} flash-transition {% if grade.lead_grade > 0 %}table-success{% endif %}">
                                         {% if grade.lead_diploma %}
-                                        {% if grade.lead_grade > 0 %}{{"%1g"|format(g.values.calculate_grade(grade.lead_grade))}}{% else %}X{% endif %}
+                                        {% if grade.lead_grade > 0 %}{{"%2g"|format(g.values.calculate_grade(grade.lead_grade))}}{% else %}X{% endif %}
                                         {% else %}
                                         -
                                         {% endif %}
                                     </td>
-                                    <td class="grade-follow {% if not grade.follow_diploma %}table-secondary{% endif %} flash-transition">
+                                    <td class="grade-follow {% if not grade.follow_diploma %}table-secondary{% endif %} flash-transition {% if grade.follow_grade > 0 %}table-success{% endif %}">
                                         {% if grade.follow_diploma %}
                                         {% if grade.follow_grade > 0 %}{{"%1g"|format(g.values.calculate_grade(grade.follow_grade))}}{% else %}X{% endif %}
                                         {% else %}
