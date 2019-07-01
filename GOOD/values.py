@@ -20,7 +20,8 @@ def calculate_grade(number):
 
 
 def formatted_grade(number):
-    return "{:.2f}".format(number)
+    # Ugly fix for floats: round(8.25, 1) = 8.2 (because of binary representation of floats)
+    return "{:.1f}".format(number + 0.01)
 
 
 def fancy_grade(number):

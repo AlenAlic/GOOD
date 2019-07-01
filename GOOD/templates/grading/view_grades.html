@@ -11,7 +11,9 @@
             </div>
             <div class="card-body">
                 {% for lvl in g.all_levels %}
-                <a class="btn btn-primary d-block my-1" href="{{url_for('grading.view_grades', discipline_id=disc.discipline_id, level_id=lvl.level_id)}}">{{lvl}} level</a>
+                    {% if lvl.disc_grading_heat(disc)|length > 0 %}
+                    <a class="btn btn-primary d-block my-1" href="{{url_for('grading.view_grades', discipline_id=disc.discipline_id, level_id=lvl.level_id)}}">{{lvl}} level</a>
+                    {% endif %}
                 {% endfor %}
             </div>
         </div>
@@ -21,6 +23,9 @@
             <div class="card-header">
                 <h4 class="card-title">{{discipline}} - {{level}} level <span class="badge badge-pill badge-primary">{{ graded }}/{{ diplomas }}</span></h4>
                 <p class="card-category">The grades of every couple in this level. This does <b><u>not</u></b> update live.</p>
+            </div>
+            <div class="card-body">
+                <a class="btn btn-primary" href="{{ url_for('grading.view_grades') }}">Back to selection page</a>
             </div>
             <div class="card-body final-grades-grid">
                 {% for couple in master_list.keys()|sort(attribute='number') %}
@@ -39,8 +44,8 @@
                                 <tr>
                                 <td class="vertical-align-middle">{{dance}}</td>
                                 {% if master_list[couple][dance][g.values.GRADE].lead_diploma %}
-                                <td class="grade-cell {% if master_list[couple][dance][g.values.FINAL_GRADE][g.values.LEAD] == '5' %}table-warning{% endif %}">
-                                    {% if master_list[couple][dance][g.values.FINAL_GRADE][g.values.LEAD] != "5" %}
+                                <td class="grade-cell {% if master_list[couple][dance][g.values.FINAL_GRADE][g.values.LEAD] == '5.0' %}table-warning{% endif %}">
+                                    {% if master_list[couple][dance][g.values.FINAL_GRADE][g.values.LEAD] != "5.0" %}
                                     {{master_list[couple][dance][g.values.FINAL_GRADE][g.values.LEAD]}}
                                     {% else %}
                                     -
@@ -50,8 +55,8 @@
                                 <td class="grade-cell table-secondary">-</td>
                                 {% endif %}
                                 {% if master_list[couple][dance][g.values.GRADE].follow_diploma %}
-                                <td class="grade-cell {% if master_list[couple][dance][g.values.FINAL_GRADE][g.values.FOLLOW] == '5' %}table-warning{% endif %}">
-                                    {% if master_list[couple][dance][g.values.FINAL_GRADE][g.values.FOLLOW] != "5" %}
+                                <td class="grade-cell {% if master_list[couple][dance][g.values.FINAL_GRADE][g.values.FOLLOW] == '5.0' %}table-warning{% endif %}">
+                                    {% if master_list[couple][dance][g.values.FINAL_GRADE][g.values.FOLLOW] != "5.0" %}
                                     {{master_list[couple][dance][g.values.FINAL_GRADE][g.values.FOLLOW]}}
                                     {% else %}
                                     -

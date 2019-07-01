@@ -13,7 +13,6 @@
         socket.on("notifyAdjudicatorExit", data => notifyAdjudicatorUpdate(data, false));
     });
     const updateGrade = data => {
-        console.log(data);
         let grades = document.getElementById('grade-' + data.gradeId);
         if (data.grade == 5) {data.grade = "X"}
         let lead = grades.querySelector('.grade-lead');
@@ -27,7 +26,13 @@
             check.classList.add("d-none");
         }
         if (data.gradingHeatId == "{{grading_heat.grading_heat_id}}") {
-            document.getElementById('graded-' + data.adjudicatorId).innerText = data.graded;
+            let graded = document.getElementById('graded-' + data.adjudicatorId);
+            graded.innerText = data.graded;
+            if (data.graded === data.dancers) {
+                let adjudicatorBar = graded.parentNode.parentNode;
+                adjudicatorBar.classList.remove("active");
+                adjudicatorBar.classList.add("list-group-item-success")
+            }
         }
     };
     const flashColor = 'table-primary';
@@ -85,6 +90,9 @@
                 <h4 class="card-title">{{grading_heat.heat.discipline}} - {{grading_heat.heat.level}} level</h4>
             </div>
             <div class="card-body">
+                <a class="btn btn-primary" href="{{ url_for('grading.live_grading') }}">Back to selection page</a>
+            </div>
+            <div class="card-body">
                 <nav class="nav nav-tabs mb-3">
                     {% for heat in heats %}
                     <a class="nav-item nav-link {% if heat == grading_heat %}active{% endif %}"
@@ -94,7 +102,7 @@
                     {% endfor %}
                 </nav>
                 {% for adj in adjudicators_list.keys()|sort(attribute='username') %}
-                <div class="list-group-item active"><b>{{adj}} - <span id="graded-{{adj.user_id}}">{{zeros[adj]}}</span>/{{grades_required[adj]}} grades given</b></div>
+                <div class="list-group-item {% if zeros[adj] == grades_required[adj] %}list-group-item-success{% else %}active{% endif %}"><b>{{adj}} - <span id="graded-{{adj.user_id}}">{{zeros[adj]}}</span>/{{grades_required[adj]}} grades given</b></div>
                 <div class="heat-couple-grade-grid">
                     {% for grade in adjudicators_list[adj] %}
                     <div>
@@ -108,14 +116,14 @@
                                 <tr>
                                     <td class="grade-lead {% if not grade.lead_diploma %}table-secondary{% endif %} flash-transition">
                                         {% if grade.lead_diploma %}
-                                        {% if grade.lead_grade > 0 %}{{"%2g"|format(g.values.calculate_grade(grade.lead_grade))}}{% else %}X{% endif %}
+                                        {% if grade.lead_grade > 0 %}{{"%1g"|format(g.values.calculate_grade(grade.lead_grade))}}{% else %}X{% endif %}
                                         {% else %}
                                         -
                                         {% endif %}
                                     </td>
                                     <td class="grade-follow {% if not grade.follow_diploma %}table-secondary{% endif %} flash-transition">
                                         {% if grade.follow_diploma %}
-                                        {% if grade.follow_grade > 0 %}{{"%2g"|format(g.values.calculate_grade(grade.follow_grade))}}{% else %}X{% endif %}
+                                        {% if grade.follow_grade > 0 %}{{"%1g"|format(g.values.calculate_grade(grade.follow_grade))}}{% else %}X{% endif %}
                                         {% else %}
                                         -
                                         {% endif %}

@@ -1,5 +1,5 @@
 from GOOD import db, login
-from flask import url_for, redirect, flash
+from flask import url_for, redirect, flash, g
 from flask_login import UserMixin, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -84,6 +84,10 @@ class Discipline(db.Model):
         heats = GradingHeat.query.all()
         heats = [h for h in heats if h.heat.discipline == self and h.adjudicating_heat(adjudicator)]
         return len(heats) > 0
+
+    def adjudicators(self):
+        adjudicating = [self.adjudicating_discipline(adj) for adj in g.all_adjudicators]
+        return len([val for val in adjudicating if val])
 
 
 class Dance(db.Model):
