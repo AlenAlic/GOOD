@@ -19,6 +19,6 @@
   "homepage": "https://github.com/AlenAlic/GOOD#readme",
   "dependencies": {
     "bootstrap": "^4.3.1",
-    "node-sass": "^4.13.0"
+    "node-sass": "^7.0.0"
   }
 }
